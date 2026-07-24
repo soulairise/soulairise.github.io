@@ -1,0 +1,27 @@
+title: 소울매트 배움 노트
+description: 요가·명상·AI를 배우고 기록하는 공간
+author: soulairise
+email: mykim97@gmail.com
+
+# GitHub Pages 기본 테마
+theme: minima
+lang: ko
+
+# 빌드 설정
+markdown: kramdown
+permalink: /:year/:month/:day/:title/
+
+# minima 테마 옵션
+minima:
+  date_format: "%Y년 %m월 %d일"
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# 빌드에서 제외
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor
