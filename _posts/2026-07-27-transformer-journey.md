@@ -9,6 +9,12 @@ tags: [트랜스포머, 어텐션, ResNet, LSTM, 토큰, 컨텍스트, LLM]
 > 이미지와 언어가 각자의 벽에 부딪혔다가, 어텐션이라는 한 열쇠로 만나 트랜스포머가 되었다.
 > 그 구조가 세상을 정복한 뒤, 마침내 우리 책상 위 '토큰과 컨텍스트'라는 실용 감각으로 내려온 이야기.
 
+<div style="margin:24px 0;padding:18px 22px;border-radius:14px;background:linear-gradient(135deg,#3f6b5f,#2c4d44);text-align:center">
+  <a href="/transformer-journey/" style="color:#fff;font-weight:700;font-size:1.05rem;text-decoration:none">
+    ✨ 다이어그램·용어사전이 담긴 보기 좋은 정리 페이지 보러 가기 →
+  </a>
+</div>
+
 ---
 
 ## 🗺️ 한눈에 보는 전체 여정
