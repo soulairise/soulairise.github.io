@@ -9,6 +9,12 @@ tags: [머신러닝, 딥러닝, softmax, 파인튜닝, GPU]
 > 규칙을 손으로 짜던 기계에서, 데이터로 스스로 배우는 기계까지.
 > 회귀 → 분류 → 파인튜닝을 직접 따라가며 이해한 학습 노트.
 
+<div style="margin:24px 0;padding:18px 22px;border-radius:14px;background:linear-gradient(135deg,#3f6b5f,#2c4d44);text-align:center">
+  <a href="/ai-how-machines-learn/" style="color:#fff;font-weight:700;font-size:1.05rem;text-decoration:none">
+    ✨ 지도·표·다이어그램이 담긴 보기 좋은 정리 페이지 보러 가기 →
+  </a>
+</div>
+
 ---
 
 ## 🗺️ 한눈에 보는 전체 지도
