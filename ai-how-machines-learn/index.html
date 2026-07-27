@@ -261,6 +261,91 @@ GPU: 작은 코어 수천 개 → 단순 계산을 한꺼번에 (병렬)</pre>
     <div class="callout"><b>AI 활용가의 진짜 일 = "좋은 모델 고르기"가 아니라 "좋은 데이터를 모으고 검증하기"</b>. 데이터 10% → 정확도↓, 사전학습 특징 물려받으면 → 적은 데이터로도 잘 됨.</div>
   </div>
 
+  <!-- Glossary -->
+  <div class="sec-title"><div class="num">📖</div><h2>용어 사전 — 생소한 말 풀이</h2></div>
+  <p style="color:var(--ink-soft);margin-bottom:18px">"이게 무슨 뜻이지?" 싶을 때 여기서 찾아보세요. 강의에 나온 순서대로, 쉬운 말로 정리했어요.</p>
+
+  <div class="card">
+    <span class="tag">🌳 큰 개념</span>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>용어</th><th>쉬운 뜻</th></tr></thead>
+      <tbody>
+        <tr><td><b>인공지능 (AI)</b></td><td>사람처럼 판단·인식하는 기계를 만드는 가장 넓은 분야</td></tr>
+        <tr><td><b>머신러닝</b></td><td>규칙을 짜주는 대신 <b>데이터로 스스로 규칙을 배우는</b> AI</td></tr>
+        <tr><td><b>딥러닝</b></td><td>여러 층을 포갠 신경망으로 배우는 머신러닝</td></tr>
+        <tr><td><b>생성형 AI</b></td><td>새 글·그림을 만들어내는 딥러닝 (챗봇·이미지 생성)</td></tr>
+        <tr><td><b>신경망</b></td><td>뇌의 뉴런을 흉내 낸, 숫자를 곱하고 더하는 층들의 묶음</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <span class="tag">🔁 학습의 원리</span>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>용어</th><th>쉬운 뜻</th></tr></thead>
+      <tbody>
+        <tr><td><b>학습 (learning)</b></td><td>예측 → 오차 확인 → 조정을 반복해 규칙을 찾아가는 것</td></tr>
+        <tr><td><b>지도학습</b></td><td><b>정답이 달린 예시</b>로 배우는 방식 (문제집+정답지)</td></tr>
+        <tr><td><b>파라미터</b></td><td>모델이 학습으로 조정하는 <b>숫자들</b>. 배운 내용이 여기 담김</td></tr>
+        <tr><td><b>가중치 (W)</b></td><td>입력에 곱하는 값 — "이 입력을 얼마나 중요하게 볼까"</td></tr>
+        <tr><td><b>편향 (b)</b></td><td>곱한 값에 더하는 값 — 기본값·출발점을 조절</td></tr>
+        <tr><td><b>오차 / 손실 (loss)</b></td><td>예측이 정답에서 <b>얼마나 틀렸는지</b>를 나타낸 숫자</td></tr>
+        <tr><td><b>MSE (평균제곱오차)</b></td><td>오차를 재는 대표 방법 — 틀린 정도를 제곱해 평균</td></tr>
+        <tr><td><b>경사하강</b></td><td>오차라는 언덕에서 가장 낮은 골짜기로 <b>한 걸음씩 내려가기</b></td></tr>
+        <tr><td><b>학습률 (lr)</b></td><td>그 한 걸음의 <b>보폭</b>. 너무 크면 헤매고 너무 작으면 느림</td></tr>
+        <tr><td><b>역전파</b></td><td>오차를 뒤에서 앞으로 되짚어 "각 층이 얼마나 틀렸나" 알려주기</td></tr>
+        <tr><td><b>퍼셉트론</b></td><td>1958년 나온 가장 단순한 신경망 (틀리면 가중치 살짝 고침)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <span class="tag">🔢 데이터를 숫자로</span>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>용어</th><th>쉬운 뜻</th></tr></thead>
+      <tbody>
+        <tr><td><b>스칼라 · 벡터</b></td><td>숫자 1개 · 숫자 한 줄 <code>[3, 5, 1]</code></td></tr>
+        <tr><td><b>행렬 · 텐서</b></td><td>숫자 격자(2차) · 격자를 쌓은 것(3차+, 컬러사진 등)</td></tr>
+        <tr><td><b>토큰</b></td><td>문장을 자른 <b>의미 있는 조각</b> (모델이 다루는 최소 단위)</td></tr>
+        <tr><td><b>임베딩</b></td><td>토큰을 <b>뜻이 담긴 숫자 벡터</b>로 바꾼 것</td></tr>
+        <tr><td><b>활성화 함수</b></td><td>층의 계산에 '꺾임'을 줘서 곡선을 그릴 수 있게 하는 장치</td></tr>
+        <tr><td><b>ReLU</b></td><td>대표 활성화 함수 — <b>음수는 0, 양수는 그대로</b> 통과</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <span class="tag">🎯 학습의 종류</span>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>용어</th><th>쉬운 뜻</th></tr></thead>
+      <tbody>
+        <tr><td><b>회귀 (regression)</b></td><td><b>연속된 숫자</b>를 맞히는 것 (예: 카페 매출 207만원)</td></tr>
+        <tr><td><b>분류 (classification)</b></td><td><b>어느 종류</b>인지 맞히는 것 (예: 손글씨 0~9)</td></tr>
+        <tr><td><b>로짓 (logit)</b></td><td>softmax 들어가기 전의 <b>날것 점수</b></td></tr>
+        <tr><td><b>softmax</b></td><td>점수들을 <b>합이 1인 확률</b>로 바꿔 하나를 고르게 함</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <span class="tag">🎁 물려받기 & 규모</span>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>용어</th><th>쉬운 뜻</th></tr></thead>
+      <tbody>
+        <tr><td><b>사전학습 (pretraining)</b></td><td>웹 규모 데이터로 <b>미리 크게 배워둔</b> 밑바탕</td></tr>
+        <tr><td><b>파인튜닝</b></td><td>사전학습된 모델을 <b>내 문제에 맞게 조금 더</b> 학습</td></tr>
+        <tr><td><b>전이학습</b></td><td>남이 배운 능력을 <b>물려받아</b> 쓰는 것 (파인튜닝을 포함하는 큰 개념)</td></tr>
+        <tr><td><b>freeze (얼리기)</b></td><td>어떤 층의 가중치를 <b>고정</b>해 학습 중 안 바꾸기 (계산·데이터 절약)</td></tr>
+        <tr><td><b>PyTorch</b></td><td>딥러닝 코드를 짜는 대표 도구(라이브러리)</td></tr>
+        <tr><td><b>autograd (자동미분)</b></td><td>"각 파라미터가 오차에 얼마나 기여했나"를 자동 계산 (역전파 대행)</td></tr>
+        <tr><td><b>CPU / GPU</b></td><td>큰 코어 몇 개(순서대로) / 작은 코어 수천 개(<b>병렬</b>, 학습에 딱)</td></tr>
+        <tr><td><b>MNIST</b></td><td>손글씨 숫자(0~9) 이미지 모음 — 딥러닝 입문의 국민 예제</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="callout" style="margin-bottom:0">💡 <b>한 줄 연결:</b> 파라미터를 <b>경사하강</b>으로 조금씩 밀어(=학습), 데이터를 <b>텐서</b>로 바꿔 넣고, <b>회귀·분류</b>로 답을 내며, 부족하면 <b>파인튜닝</b>으로 남의 걸 물려받는다. 이 전부가 다음 편 <b>트랜스포머</b>에서도 똑같이 쓰여요.</div>
+
   <div class="closing">
     <p class="q">모델 구조보다<br><span class="hl">데이터가 결과를 가른다.</span></p>
     <p class="sig">— AI는 어떻게 배우나 · 1~7강 완주 🎉</p>
