@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>퀘스트A · 두 길이 트랜스포머에서 합류하다 (4강)</title>
+<style>
+  :root{
+    --bg:#faf8f4;--bg2:#f2ede4;--card:#fff;--ink:#2a2723;--soft:#6b6357;
+    --line:#e3dacb;--gr:#3f6b5f;--gr2:#2c4d44;--gold:#c8a15a;--red:#a65a3f;
+    --sh:0 2px 6px rgba(60,50,30,.07),0 10px 30px rgba(60,50,30,.07);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#17140f;--bg2:#201b14;--card:#221d16;--ink:#ece5d8;--soft:#a89e8c;
+    --line:#3a3126;--gr:#7fb3a2;--gr2:#5d9384;--gold:#d9b877;--red:#d68a6c;
+    --sh:0 2px 6px rgba(0,0,0,.3),0 12px 34px rgba(0,0,0,.4);}}
+  :root[data-theme="dark"]{--bg:#17140f;--bg2:#201b14;--card:#221d16;--ink:#ece5d8;--soft:#a89e8c;
+    --line:#3a3126;--gr:#7fb3a2;--gr2:#5d9384;--gold:#d9b877;--red:#d68a6c;
+    --sh:0 2px 6px rgba(0,0,0,.3),0 12px 34px rgba(0,0,0,.4);}
+  :root[data-theme="light"]{--bg:#faf8f4;--bg2:#f2ede4;--card:#fff;--ink:#2a2723;--soft:#6b6357;
+    --line:#e3dacb;--gr:#3f6b5f;--gr2:#2c4d44;--gold:#c8a15a;--red:#a65a3f;
+    --sh:0 2px 6px rgba(60,50,30,.07),0 10px 30px rgba(60,50,30,.07);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+  .deck{height:100vh;display:grid;place-items:center;padding:54px 38px 74px}
+  .slide{display:none;width:100%;max-width:1020px;animation:in .25s ease}
+  .slide.on{display:block}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  h1{font-size:clamp(1.9rem,4.8vw,3.2rem);font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  h2{font-size:clamp(1.4rem,3.2vw,2.15rem);font-weight:800;letter-spacing:-.015em;margin-bottom:20px;line-height:1.28}
+  h3{font-size:clamp(1rem,1.9vw,1.25rem);font-weight:750;margin-bottom:10px}
+  p{font-size:clamp(.95rem,1.55vw,1.12rem);color:var(--soft);margin-bottom:13px}
+  b{color:var(--ink)} i{color:var(--soft)}
+  .g{color:var(--gr);font-weight:750} .r{color:var(--red);font-weight:750}
+  small{font-size:.86em}
+
+  .cover{text-align:center}
+  .cover .kick{color:var(--gr);letter-spacing:.3em;font-size:.78rem;font-weight:700;text-transform:uppercase}
+  .cover .sub{margin-top:20px;color:var(--soft);font-size:1.02rem}
+  .part{text-align:center;padding:34px 0}
+  .part .pno{display:inline-grid;place-items:center;width:70px;height:70px;border-radius:21px;
+    background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;font-size:1.8rem;font-weight:800;margin-bottom:20px}
+  .part .who{margin-top:18px;display:inline-block;background:var(--bg2);border:1px solid var(--line);
+    border-radius:20px;padding:6px 17px;font-size:.87rem;color:var(--soft)}
+
+  ul.pts{list-style:none;display:grid;gap:12px}
+  ul.pts li{position:relative;padding-left:29px;font-size:clamp(.95rem,1.62vw,1.15rem);color:var(--soft)}
+  ul.pts li::before{content:"›";position:absolute;left:8px;color:var(--gr);font-weight:800;font-size:1.2em;line-height:1}
+  ul.pts li b{color:var(--ink)}
+
+  .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:19px 22px;box-shadow:var(--sh)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+  @media(max-width:780px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  .hl{background:var(--bg2);border-left:4px solid var(--gold);border-radius:0 12px 12px 0;
+    padding:15px 19px;margin-top:17px;font-size:clamp(.92rem,1.55vw,1.07rem)}
+  .hl b{color:var(--gr)}
+  .big{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;border-radius:18px;
+    padding:26px 28px;text-align:center;font-size:clamp(1.05rem,2.2vw,1.55rem);font-weight:750;line-height:1.5}
+  .big .y{color:var(--gold)}
+  .big small{opacity:.85;font-weight:400;display:block;margin-top:8px;font-size:.7em}
+
+  .chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+  .cell{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 15px;
+    text-align:center;box-shadow:var(--sh);min-width:86px}
+  .cell small{display:block;color:var(--soft);font-size:.7rem;margin-bottom:2px}
+  .cell b{font-size:.93rem}
+  .ar{color:var(--gr);font-size:1.25rem;font-weight:700}
+
+  .qk{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:8px}
+  @media(max-width:780px){.qk{grid-template-columns:1fr}}
+  .qk .c{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:var(--sh);text-align:center}
+  .qk .c .l{font-size:1.85rem;font-weight:800;color:var(--gr);line-height:1.1}
+  .qk .c .n{font-weight:750;margin:6px 0 4px;font-size:.98rem}
+  .qk .c small{color:var(--soft);font-size:.83rem;line-height:1.45;display:block}
+
+  .steps{display:grid;gap:9px}
+  .st{display:flex;gap:13px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:12px 16px;box-shadow:var(--sh)}
+  .st .n{flex:none;width:26px;height:26px;border-radius:8px;background:var(--gr);color:#fff;
+    display:grid;place-items:center;font-weight:800;font-size:.8rem}
+  .st .t{font-size:clamp(.9rem,1.55vw,1.06rem)}
+
+  table{border-collapse:collapse;width:100%;font-size:clamp(.84rem,1.45vw,1rem)}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--bg2);font-weight:750;color:var(--ink)}
+  td{color:var(--soft)}td b{color:var(--ink)}
+  tr:last-child td{border-bottom:none}
+  .tw{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:6px}
+
+  code{font-family:"SF Mono",Menlo,Consolas,monospace;background:var(--bg2);padding:2px 6px;border-radius:5px;font-size:.9em}
+  pre{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:15px 18px;
+    overflow-x:auto;font-size:clamp(.78rem,1.35vw,.96rem);line-height:1.75;
+    font-family:"SF Mono",Menlo,Consolas,monospace;color:var(--ink);margin:12px 0}
+  .fx{text-align:center;font-size:clamp(1rem,2.1vw,1.45rem);font-family:"SF Mono",Menlo,monospace;
+    background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:20px;margin:14px 0;color:var(--ink)}
+
+  /* attention weights */
+  .weights{display:flex;gap:7px;justify-content:center;align-items:center;flex-wrap:wrap;margin:12px 0}
+  .weights span{background:var(--gr);border-radius:7px;padding:8px 13px;color:#fff;font-size:.92rem}
+  .w20{opacity:.18}.w40{opacity:.35}.w60{opacity:.6}.w100{opacity:1;font-weight:800;transform:scale(1.08)}
+
+  /* transformer 2 columns */
+  .arch{display:flex;gap:18px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:12px 0}
+  .col{flex:1;min-width:230px;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .col .ct{text-align:center;font-weight:800;color:var(--gr);margin-bottom:10px;font-size:.95rem}
+  .blk{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 11px;
+    margin-bottom:7px;font-size:.84rem;text-align:center}
+  .blk.att{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;border:none;font-weight:750}
+  .blk.pos{border-style:dashed;color:var(--soft)}
+  .rep{text-align:center;font-size:.72rem;color:var(--soft);margin:5px 0}
+
+  .merge{display:grid;gap:10px;justify-items:center}
+  .merge .two{display:flex;gap:13px;flex-wrap:wrap;justify-content:center;width:100%}
+  .merge .n2{flex:1;min-width:205px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:13px;text-align:center;box-shadow:var(--sh)}
+  .merge .n2 small{display:block;color:var(--soft);font-size:.74rem}
+  .merge .key{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;border-radius:14px;
+    padding:13px 26px;text-align:center;font-weight:750}
+  .merge .fin{background:var(--ink);color:var(--bg);border-radius:14px;padding:13px 30px;font-weight:800}
+
+  .qa{display:grid;gap:10px}
+  .qa .q{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gr);
+    border-radius:0 12px 12px 0;padding:12px 16px;font-size:clamp(.88rem,1.5vw,1.03rem)}
+  .qa .q b{color:var(--gr)}
+
+  .bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gr),var(--gold));transition:width .25s;z-index:20}
+  .topL{position:fixed;top:13px;left:19px;font-size:.74rem;color:var(--soft);letter-spacing:.06em;z-index:15}
+  .topR{position:fixed;top:10px;right:17px;display:flex;gap:6px;z-index:15}
+  .btn{background:var(--card);border:1px solid var(--line);color:var(--soft);border-radius:16px;
+    padding:5px 12px;font-size:.73rem;cursor:pointer}
+  .btn:hover{border-color:var(--gr);color:var(--gr)}
+  .pg{position:fixed;bottom:13px;right:19px;font-size:.77rem;color:var(--soft);z-index:15}
+  .nav{position:fixed;bottom:10px;left:19px;display:flex;gap:6px;z-index:15}
+  .notes{position:fixed;left:0;right:0;bottom:0;background:var(--gr2);color:#fff;padding:13px 22px 15px;
+    font-size:.87rem;line-height:1.6;display:none;z-index:18;max-height:36vh;overflow-y:auto}
+  .notes.on{display:block}
+  .notes .lab{color:var(--gold);font-weight:800;font-size:.69rem;letter-spacing:.14em;display:block;margin-bottom:4px}
+  aside{display:none}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="topL" id="topL"></div>
+<div class="topR">
+  <button class="btn" onclick="tgN()">🗒 대본 (S)</button>
+  <button class="btn" onclick="tgT()">🌗</button>
+</div>
+<div class="nav"><button class="btn" onclick="go(-1)">←</button><button class="btn" onclick="go(1)">→</button></div>
+<div class="pg" id="pg"></div>
+
+<div class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide" data-part="표지">
+  <div class="cover">
+    <span class="kick">퀘스트 A · 모두를 이해시켜라</span>
+    <h1 style="margin:18px 0">두 길이<br>트랜스포머에서 합류하다</h1>
+    <p class="sub">4강 · Attention Is All You Need (2017)</p>
+  </div>
+  <aside>안녕하세요. 저희 팀이 오늘 4강을 맡았습니다. 딱 하나만 미리 말씀드릴게요. 오늘 주인공은 어텐션 하나입니다. 이 하나가 어떻게 순환 구조를 통째로 몰아냈는지, 60분 동안 뜯어보겠습니다.</aside>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-part="표지">
+  <h2>🗺️ 오늘의 지도 — 4개 파트</h2>
+  <div class="tw"><table>
+    <thead><tr><th>파트</th><th>내용</th><th>핵심 한 줄</th></tr></thead>
+    <tbody>
+      <tr><td><b>1</b></td><td>왜 트랜스포머인가</td><td>순환을 버린 이유는 성능보다 <b>병렬</b></td></tr>
+      <tr><td><b>2</b></td><td>어텐션의 심장 · Q/K/V</td><td>질문 카드 · 색인표 · 책 내용</td></tr>
+      <tr><td><b>3</b></td><td>나머지 조각들</td><td>멀티헤드 · 위치 인코딩 · KV cache</td></tr>
+      <tr><td><b>4</b></td><td>두 길의 합류</td><td>어텐션은 <b>이미지 자물쇠에도</b> 맞았다</td></tr>
+    </tbody>
+  </table></div>
+  <div class="hl">🎯 끝나면 이 질문에 답할 수 있습니다 — <b>"트랜스포머는 무엇을 버렸고, 왜 그게 결정적이었나?"</b></div>
+  <aside>지도를 먼저 보여드립니다. 지금 외우실 필요 없고, 오른쪽 핵심 한 줄만 눈에 담아두세요. 마지막에 이 표로 다시 돌아옵니다.</aside>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-part="표지">
+  <h2>📌 30초 복습 — 여기까지 온 길</h2>
+  <div class="chain">
+    <div class="cell"><small>RNN</small><b>순서대로 읽기</b></div><span class="ar">→</span>
+    <div class="cell"><small>문제</small><b class="r">순서의 벽</b></div><span class="ar">→</span>
+    <div class="cell"><small>seq2seq</small><b class="r">벡터 1개 병목</b></div><span class="ar">→</span>
+    <div class="cell" style="border-color:var(--gr)"><small>해결</small><b class="g">Attention</b></div>
+  </div>
+  <ul class="pts">
+    <li>어텐션으로 <b>고정벡터 병목</b>은 깨졌습니다 — 매 단어마다 원문을 되돌아보며 가중치를 줌</li>
+    <li>그런데 attention은 어디까지나 <b>RNN을 거들어 주는 보조 장치</b>였습니다</li>
+    <li>정작 성능을 끌어올린 <b class="g">주역은 attention</b>이고, RNN의 순차 처리는 <b class="r">걸림돌</b>로만 남았죠</li>
+  </ul>
+  <div class="hl">🤔 그렇다면… 자연스럽게 이런 생각이 따라옵니다.</div>
+  <aside>3강을 안 들으신 분도 따라올 수 있게 30초만 복습합니다. 핵심은 마지막 두 줄입니다. 어텐션은 조연이었는데 알고 보니 주연이었고, RNN은 걸림돌만 남았다는 상황.</aside>
+</section>
+
+<!-- 4 PART1 -->
+<section class="slide" data-part="PART 1">
+  <div class="part">
+    <div class="pno">1</div>
+    <h2 style="margin:0">왜 트랜스포머인가</h2>
+    <p style="margin-top:11px">순환을 버린다는 대담한 결정</p>
+    <span class="who">발표자 ①  ·  약 13분</span>
+  </div>
+  <aside>파트1을 맡은 OOO입니다. 2017년에 무슨 일이 있었는지, 그리고 왜 이 선택이 지금의 LLM을 만들었는지 보겠습니다.</aside>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-part="PART 1">
+  <h2>💥 대담한 질문 하나</h2>
+  <div class="big">"순차 처리를 <span class="y">거들 게</span> 아니라,<br>아예 <span class="y">통째로 걷어내고</span><br>attention <span class="y">하나만으로</span> 문장을 처리하면?"</div>
+  <ul class="pts" style="margin-top:18px">
+    <li>그러면 <b class="r">순서의 벽</b>도 사라지고,</li>
+    <li>병렬화를 막던 <b class="r">순차성</b>도 한꺼번에 사라지지 않을까?</li>
+  </ul>
+  <aside>여기서 잠깐 뜸을 들이세요. 문제를 푼 게 아니라 질문 자체를 바꿨다는 게 핵심입니다. 학생들에게 "여러분이라면 어떻게 하시겠어요?" 하고 물어봐도 좋습니다.</aside>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-part="PART 1">
+  <h2>2017년, 여덟 명의 연구자가 답을 내놓습니다</h2>
+  <div class="big">📄 <span class="y">Attention Is All You Need</span><br><small>Vaswani et al., 2017 · arXiv:1706.03762</small></div>
+  <p style="text-align:center;margin-top:20px;font-size:1.1rem">논문 <b>제목부터 선언</b>에 가까웠습니다.<br>"어텐션만 있으면 된다."</p>
+  <div class="hl">여기서 제안된 구조의 이름이 바로 <b>트랜스포머(Transformer)</b>입니다.</div>
+  <aside>제목을 한 번 크게 읽어주세요. 논문 제목이 이렇게 도발적인 경우는 드뭅니다. 저자가 여덟 명이라는 것도 재밌는 포인트입니다.</aside>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-part="PART 1">
+  <h2>버린 것 / 남긴 것</h2>
+  <div class="grid2">
+    <div class="box">
+      <h3 class="r">❌ 버린 것</h3>
+      <p style="margin:0"><b>recurrence (순환 구조)</b><br><small>앞에서 뒤로 한 토큰씩 처리하는 RNN 방식</small></p>
+      <p style="margin:10px 0 0"><b>convolution (합성곱)</b><br><small>국소 패턴을 훑는 CNN 방식</small></p>
+    </div>
+    <div class="box" style="display:grid;place-items:center">
+      <div>
+        <h3 class="g">✅ 남긴 것</h3>
+        <p style="margin:0;font-size:1.45rem;text-align:center"><b>어텐션</b><br><b>오직 그것뿐</b></p>
+      </div>
+    </div>
+  </div>
+  <div class="hl">논문 표현 그대로 — <i>"based solely on attention mechanisms,<br>dispensing with recurrence and convolutions entirely"</i></div>
+  <aside>버린 것 두 개, 남긴 것 하나. 이 대비가 명쾌해서 학생들이 잘 기억합니다. 영어 문장은 읽고 나서 "순환도 합성곱도 완전히 버리고 오직 어텐션만으로"라고 번역해 주세요.</aside>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-part="PART 1">
+  <h2>⭐ 왜 결정적이었나 — <span class="g">성능보다 먼저 '계산 방식'</span></h2>
+  <div class="grid2">
+    <div class="box">
+      <h3 class="r">RNN ⛓️ 순서가 곧 족쇄</h3>
+      <div class="chain" style="margin:8px 0">
+        <div class="cell" style="min-width:44px;padding:7px"><b>1</b></div><span class="ar">→</span>
+        <div class="cell" style="min-width:44px;padding:7px"><b>2</b></div><span class="ar">→</span>
+        <div class="cell" style="min-width:44px;padding:7px"><b>3</b></div>
+      </div>
+      <p style="margin:0;text-align:center"><small>3번째를 처리하려면<br><b>2번째가 끝나길 기다려야</b> 함</small></p>
+    </div>
+    <div class="box">
+      <h3 class="g">Transformer 🚀 동시에</h3>
+      <div class="chain" style="margin:8px 0">
+        <div class="cell" style="min-width:44px;padding:7px;background:var(--gr);color:#fff;border:none"><b>1</b></div>
+        <div class="cell" style="min-width:44px;padding:7px;background:var(--gr);color:#fff;border:none"><b>2</b></div>
+        <div class="cell" style="min-width:44px;padding:7px;background:var(--gr);color:#fff;border:none"><b>3</b></div>
+      </div>
+      <p style="margin:0;text-align:center"><small>모든 토큰이 <b>서로를 동시에</b> 바라봄<br>→ 한꺼번에 GPU에 올려 <b>병렬 계산</b></small></p>
+    </div>
+  </div>
+  <div class="hl">🔑 <b>순차의 벽이 사라지자 더 큰 데이터·더 큰 모델을 감당할 길이 열렸습니다.</b><br>
+  ← 대결에 나올 확률 1순위! "성능이 아니라 <b>계산 방식</b>"이 답입니다.</div>
+  <aside>파트1에서 가장 중요한 슬라이드입니다. 목소리를 높이세요. 많은 사람이 "트랜스포머가 성능이 좋아서 이겼다"고 답하는데, 정답은 병렬 계산이 가능해서 크게 키울 수 있었다는 점입니다.</aside>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-part="PART 1">
+  <h2>그 결과는 숫자로도 증명됐습니다</h2>
+  <div class="grid3">
+    <div class="box" style="text-align:center"><div style="font-size:2rem">🖥️</div><p style="margin:6px 0 0"><b>GPU 8장</b><br><small>단 여덟 장으로</small></p></div>
+    <div class="box" style="text-align:center"><div style="font-size:2rem">⏱️</div><p style="margin:6px 0 0"><b>3.5일</b><br><small>학습 기간</small></p></div>
+    <div class="box" style="text-align:center"><div style="font-size:2rem">🏆</div><p style="margin:6px 0 0"><b>BLEU 최고</b><br><small>번역 품질 신기록</small></p></div>
+  </div>
+  <p style="margin-top:16px">기존 방식의 학습 비용에 비하면 <b>작은 조각</b>이었습니다.</p>
+  <div class="big" style="margin-top:6px">지금 우리가 부르는 <span class="y">LLM</span>이라는 이름의<br><span class="y">첫 단추</span>가 여기서 끼워집니다</div>
+  <aside>BLEU는 기계번역 품질을 재는 점수라고 한 줄만 설명하면 됩니다. 중요한 건 "적은 비용으로 최고 기록"이라는 대비입니다.</aside>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-part="PART 1">
+  <h2>✅ 파트 1 정리</h2>
+  <div class="steps">
+    <div class="st"><span class="n">1</span><span class="t">2017년 <b>Attention Is All You Need</b> → 구조 이름은 <b>트랜스포머</b></span></div>
+    <div class="st"><span class="n">2</span><span class="t"><b>recurrence(순환)</b>도 <b>convolution(합성곱)</b>도 버리고 <b class="g">어텐션만</b> 남김</span></div>
+    <div class="st"><span class="n">3</span><span class="t">결정적 이유는 성능보다 <b class="g">계산 방식 = 병렬화</b></span></div>
+    <div class="st"><span class="n">4</span><span class="t">순차의 벽이 사라지자 <b>더 큰 모델·데이터</b>의 길이 열림 → <b>LLM의 시작</b></span></div>
+  </div>
+  <aside>파트1을 닫습니다. 다음 파트는 "그래서 그 어텐션이 정확히 뭘 하는 계산이냐"입니다.</aside>
+</section>
+
+<!-- 11 PART2 -->
+<section class="slide" data-part="PART 2">
+  <div class="part">
+    <div class="pno">2</div>
+    <h2 style="margin:0">어텐션의 심장 · Q / K / V</h2>
+    <p style="margin-top:11px">도서관에서 책을 찾듯</p>
+    <span class="who">발표자 ②  ·  약 17분</span>
+  </div>
+  <aside>파트2 담당 OOO입니다. 오늘 강의에서 가장 중요하고 가장 긴 파트입니다. 어텐션이 실제로 무슨 계산을 하는지 뜯어봅니다.</aside>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-part="PART 2">
+  <h2>먼저, 이름 때문에 생기는 <span class="r">오해부터</span></h2>
+  <div class="grid2">
+    <div class="box">
+      <h3 class="r">❌ 흔한 오해</h3>
+      <p style="margin:0">"AI가 <b>사람처럼 집중</b>하는 것"</p>
+    </div>
+    <div class="box">
+      <h3 class="g">✅ 실제로 벌어지는 일</h3>
+      <p style="margin:0">토큰들 사이의<br><b>관계 가중치를 계산</b>하는 것</p>
+    </div>
+  </div>
+  <div class="big" style="margin-top:18px">한 토큰이 다른 토큰들을 둘러보며<br>"지금 <span class="y">나를 이해하려면 누구를 참고해야 하는가</span>"를<br>스스로 정하는 방식</div>
+  <aside>이름이 어텐션(주의집중)이라 사람의 집중력처럼 들리지만 실제로는 관계 가중치 계산입니다. 이 구분을 처음에 확실히 해두면 뒤가 편합니다.</aside>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-part="PART 2">
+  <h2>예문으로 감 잡기</h2>
+  <div class="box" style="text-align:center;padding:22px">
+    <p style="font-size:clamp(1.05rem,2.1vw,1.35rem);color:var(--ink);margin:0">
+      "이의신청 기간이 지나면 처분은 <b class="g">확정</b>됩니다"</p>
+  </div>
+  <p style="margin-top:14px">'<b class="g">확정</b>'이라는 토큰을 만들 때, 모델은 주변 조각을 얼마나 참고할지 저울질합니다.</p>
+  <div class="weights">
+    <span class="w100">이의신청 기간</span><span class="w60">지나면</span><span class="w60">처분</span><span class="w20">은</span><span class="w20">…</span>
+  </div>
+  <p style="text-align:center"><small>굵을수록 큰 가중치 · <b>이의신청 기간</b>은 강하게, <b>지나면</b>은 조건으로, <b>처분</b>은 대상 개념으로</small></p>
+  <div class="hl">⚠️ 모델이 <b>사람처럼 법률을 이해</b>한다는 뜻이 아닙니다.<br>
+  수많은 문장에서 <b>어떤 조각들이 함께 등장하고 어떤 관계를 맺는지 학습</b>했기에,
+  관련 있는 토큰을 <b>끌어와 섞는 것</b>입니다.</div>
+  <aside>아래 경고 문구가 정말 중요합니다. 모델이 법을 아는 게 아니라 통계적 관계를 배운 것이라는 점. 여기서 질문이 많이 나옵니다.</aside>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-part="PART 2">
+  <h2>📚 이 저울질을 <span class="g">세 종류의 벡터</span>가 나눠 맡습니다</h2>
+  <div class="qk">
+    <div class="c"><div class="l">Q</div><div class="n">Query · 질문 카드</div><small>내가 들고 온 질문<br>"나를 이해하려면<br>무엇이 필요하지?"</small></div>
+    <div class="c"><div class="l">K</div><div class="n">Key · 색인표</div><small>다른 토큰들이 내미는 단서<br>"나는 이런 정보와<br>관련 있어"</small></div>
+    <div class="c"><div class="l">V</div><div class="n">Value · 책 내용</div><small>참고하기로 정한 토큰에서<br><b>실제로 가져오는<br>정보</b></small></div>
+  </div>
+  <div class="big" style="margin-top:16px">내 <span class="y">질문 카드(Q)</span>를 서가의 모든 <span class="y">색인표(K)</span>와 맞춰 보고,<br>
+  잘 맞는 책일수록 그 <span class="y">내용(V)</span>을 많이 가져와 섞는다</div>
+  <aside>도서관 비유는 손동작과 함께 하세요. 질문 카드를 들고 서가를 훑는 시늉을 하면 훨씬 잘 전달됩니다. 이 슬라이드는 대결 단골이니 천천히.</aside>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-part="PART 2">
+  <h2>같은 글자, 다른 뜻 — 어떻게 갈라낼까?</h2>
+  <div class="grid2">
+    <div class="box">
+      <h3>🏦 "<b>은행</b>에 예금했다"</h3>
+      <div class="weights" style="margin:8px 0"><span class="w100">예금</span><span class="w20">했다</span></div>
+      <p style="margin:0;text-align:center"><small>→ 금융기관으로 해석</small></p>
+    </div>
+    <div class="box">
+      <h3>🌳 "강가의 <b>은행</b>나무"</h3>
+      <div class="weights" style="margin:8px 0"><span class="w100">강가</span><span class="w100">나무</span></div>
+      <p style="margin:0;text-align:center"><small>→ 식물로 해석</small></p>
+    </div>
+  </div>
+  <div class="hl">표면은 <b>똑같은 글자</b>인데, 주변 단서(K)가 달라서 <b class="g">같은 글자를 다른 문맥으로 갈라냅니다.</b></div>
+  <aside>이 예시가 어텐션의 힘을 가장 직관적으로 보여줍니다. 학생들에게 다른 중의적 단어(눈, 배, 말 등)를 물어봐도 재밌습니다.</aside>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-part="PART 2">
+  <h2>그런데 Q·K·V는 <span class="g">어디서 오는 걸까요?</span></h2>
+  <ul class="pts">
+    <li>토큰의 현재 표현(벡터)을 <b>그대로 Q, K, V라고 부르지 않습니다</b></li>
+    <li>모델이 학습한 <b>세 개의 선형변환</b>으로 그 표현에서 <b>역할이 다른 세 벡터</b>를 뽑아냅니다</li>
+  </ul>
+  <div class="chain">
+    <div class="cell" style="min-width:110px"><small>토큰의 표현</small><b>벡터 1개</b></div>
+    <span class="ar">→</span>
+    <div class="cell" style="border-color:var(--gr)"><small>렌즈 W<sub>Q</sub></small><b>Q</b></div>
+    <div class="cell" style="border-color:var(--gr)"><small>렌즈 W<sub>K</sub></small><b>K</b></div>
+    <div class="cell" style="border-color:var(--gr)"><small>렌즈 W<sub>V</sub></small><b>V</b></div>
+  </div>
+  <div class="hl"><b>선형변환</b>이란 벡터에 <b>학습된 숫자 표(행렬)</b>를 곱해 다른 벡터로 바꾸는 계산.<br>
+  → <b>같은 재료에서 서로 다른 성격의 정보를 끄집어내는 '렌즈'</b>라고 보면 됩니다. 🔍</div>
+  <aside>렌즈 비유가 좋습니다. 같은 사물을 세 개의 다른 렌즈로 보면 다른 게 보이듯, 같은 토큰 표현에서 세 가지 역할을 뽑아냅니다.</aside>
+</section>
+
+<!-- 17 -->
+<section class="slide" data-part="PART 2">
+  <h2>⭐ 어텐션이 하는 일 — <span class="g">딱 3단계</span></h2>
+  <div class="steps">
+    <div class="st"><span class="n">1</span><span class="t"><b>점수 매기기</b> — 모든 <b>Q</b>를 모든 <b>K</b>와 맞대 <b>점수표</b>를 만든다</span></div>
+    <div class="st"><span class="n">2</span><span class="t"><b>비율로 바꾸기</b> — <b>softmax</b>로 "얼마나 참고할지"의 비율(합=1)로 변환</span></div>
+    <div class="st"><span class="n">3</span><span class="t"><b>섞기</b> — 그 비율대로 <b>V</b>를 섞어 <b>문맥이 반영된 새 표현</b>을 내놓는다</span></div>
+  </div>
+  <div class="fx">Attention(Q,K,V) = softmax( Q·K<sup>T</sup> / √d ) · V</div>
+  <div class="hl">수식이 어려워 보여도 읽는 법은 위 3단계 그대로입니다.<br>
+  <b>Q·K<sup>T</sup></b>가 ①점수표, <b>softmax</b>가 ②비율, 마지막 <b>·V</b>가 ③섞기예요.</div>
+  <aside>수식 보고 겁먹지 말라고 먼저 말해주세요. 그리고 수식의 각 부분을 손으로 짚으며 3단계와 하나씩 짝지어 주면 다들 이해합니다.</aside>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-part="PART 2">
+  <h2>🔬 왜 하필 <span class="g">√d 로 나눌까?</span></h2>
+  <ul class="pts">
+    <li>Q와 K를 맞대는 계산은 <b>벡터가 길어질수록(차원 d가 클수록) 점수가 크게 벌어집니다</b></li>
+    <li>점수 차이가 너무 벌어지면 <b>softmax가 한쪽으로 극단적으로 쏠려</b> 버립니다</li>
+    <li>거의 0과 1만 남으면 <b class="r">학습 신호(기울기)가 죽습니다</b></li>
+  </ul>
+  <div class="hl">그래서 <b>벡터 길이의 제곱근(√d)으로 한 번 눌러줍니다.</b><br>
+  이 때문에 이름도 <b>Scaled</b> Dot-Product Attention (스케일 조정된 내적 어텐션)이에요.</div>
+  <aside>깊이 보기 파트입니다. 어려우면 "점수가 너무 벌어지지 않게 눌러주는 안전장치" 한 줄로만 설명해도 충분합니다. 질문이 나오면 이 슬라이드를 보여주세요.</aside>
+</section>
+
+<!-- 19 -->
+<section class="slide" data-part="PART 2">
+  <h2>🎭 생성할 때는 — <span class="g">causal mask (인과 마스크)</span></h2>
+  <div class="box">
+    <p style="margin:0">디코더가 다음 토큰을 <b>생성</b>할 때는, 아직 만들지 않은 <b>미래 위치의 점수를 음의 무한대로 눌러</b>
+    softmax에서 <b>사실상 0</b>으로 만듭니다.</p>
+  </div>
+  <div class="chain">
+    <div class="cell" style="border-color:var(--gr)"><small>참고 가능</small><b>앞 토큰</b></div>
+    <div class="cell" style="border-color:var(--gr)"><small>참고 가능</small><b>자기 자신</b></div>
+    <div class="cell" style="opacity:.35"><small class="r">차단 🚫</small><b>미래 토큰</b></div>
+  </div>
+  <div class="hl">덕분에 현재 위치는 <b>앞의 토큰과 자기 자신까지만</b> 참고할 수 있고,<br>
+  <b>정답의 미래를 미리 훔쳐보지 못합니다.</b></div>
+  <aside>시험 볼 때 뒷장 답을 못 보게 가리는 것과 같다고 비유하면 쉽습니다. 학습할 때 미래를 보면 컨닝이 되니까요.</aside>
+</section>
+
+<!-- 20 -->
+<section class="slide" data-part="PART 2">
+  <h2>⚠️ 정확히 짚고 갈 것 — <span class="r">아주 흔한 오해</span></h2>
+  <div class="grid2">
+    <div class="box">
+      <h3 class="r">❌ 오해</h3>
+      <p style="margin:0">"어텐션이 <b>다음 토큰의 확률</b>을 내놓는다"</p>
+    </div>
+    <div class="box">
+      <h3 class="g">✅ 사실</h3>
+      <p style="margin:0">어텐션이 내놓는 건<br><b>문맥이 반영된 '표현의 갱신'</b></p>
+    </div>
+  </div>
+  <div class="chain" style="margin-top:20px">
+    <div class="cell"><small>어텐션</small><b>표현 갱신</b></div><span class="ar">→</span>
+    <div class="cell"><small>…여러 층…</small><b>⋯</b></div><span class="ar">→</span>
+    <div class="cell" style="background:var(--gr);color:#fff;border:none"><small style="color:rgba(255,255,255,.75)">맨 끝</small><b>출력층</b></div><span class="ar">→</span>
+    <div class="cell"><small>결과</small><b>토큰 확률</b></div>
+  </div>
+  <div class="hl">다음에 올 토큰의 <b>확률</b>은, 이렇게 갱신된 표현을 받아 <b>맨 끝의 출력층</b>이 계산합니다.<br>
+  ← <b>함정 문제로 나오기 딱 좋은 지점!</b> 🪤</div>
+  <aside>이 슬라이드는 반드시 짚고 넘어가세요. 대결에서 함정 문제로 나올 수 있습니다. 어텐션은 표현을 갱신할 뿐이고, 확률은 출력층 몫입니다.</aside>
+</section>
+
+<!-- 21 -->
+<section class="slide" data-part="PART 2">
+  <h2>✅ 파트 2 정리</h2>
+  <div class="tw"><table>
+    <tbody>
+      <tr><td><b>어텐션이란</b></td><td>토큰들 사이의 <b>관계 가중치를 계산</b>해 정보를 섞는 것 (집중력 아님)</td></tr>
+      <tr><td><b>Q · K · V</b></td><td>질문 카드 · 색인표 · 책 내용 — <b>학습된 선형변환(렌즈)</b>으로 뽑아냄</td></tr>
+      <tr><td><b>3단계</b></td><td>점수표(Q·K) → 비율(softmax) → 섞기(·V)</td></tr>
+      <tr><td><b>√d</b></td><td>점수가 과하게 벌어지는 걸 눌러주는 안전장치</td></tr>
+      <tr><td><b>causal mask</b></td><td>미래 토큰을 가려 <b>컨닝 방지</b></td></tr>
+      <tr><td><b class="r">주의</b></td><td>어텐션 출력 = <b>표현의 갱신</b>, 확률은 <b>출력층</b>이 계산</td></tr>
+    </tbody>
+  </table></div>
+  <aside>파트2가 제일 무거웠습니다. 여기서 질문을 받고 넘어가세요.</aside>
+</section>
+
+<!-- 22 PART3 -->
+<section class="slide" data-part="PART 3">
+  <div class="part">
+    <div class="pno">3</div>
+    <h2 style="margin:0">나머지 조각들</h2>
+    <p style="margin-top:11px">멀티헤드 · KV cache · 위치 인코딩</p>
+    <span class="who">발표자 ③  ·  약 15분</span>
+  </div>
+  <aside>파트3 담당 OOO입니다. 어텐션 하나만으로는 트랜스포머가 완성되지 않습니다. 빠진 조각 세 개를 채우겠습니다.</aside>
+</section>
+
+<!-- 23 -->
+<section class="slide" data-part="PART 3">
+  <h2>멀티헤드 어텐션 — <span class="g">여러 관점으로 동시에</span></h2>
+  <p>같은 문장이라도 볼 각도는 하나가 아닙니다.</p>
+  <div class="qk">
+    <div class="c"><div class="l">👁</div><small>어떤 시선은<br><b>주어–동사 짝</b>을 좇고</small></div>
+    <div class="c"><div class="l">👁</div><small>다른 시선은<br><b>괄호 안 예외 문구</b>를 붙잡고</small></div>
+    <div class="c"><div class="l">👁</div><small>또 다른 시선은<br><b>문체·형식 단서</b>를 봄</small></div>
+  </div>
+  <div class="hl">이 서로 다른 시선을 한 번에 굴리려고 어텐션을 <b>여러 벌 병렬로</b> 둡니다.<br>
+  이것이 <b class="g">멀티헤드 어텐션</b>, 각각의 어텐션을 <b class="g">헤드(head)</b>라고 부릅니다.</div>
+  <aside>여러 사람이 같은 문서를 각자 다른 관점으로 읽고 의견을 합치는 것과 같다고 비유하면 좋습니다.</aside>
+</section>
+
+<!-- 24 -->
+<section class="slide" data-part="PART 3">
+  <h2>🎓 발표할 때 <span class="g">정확하게</span> 말하기</h2>
+  <div class="box">
+    <p style="margin:0;font-size:clamp(1rem,1.9vw,1.2rem)">
+    "실제 헤드가 사람이 이름 붙이듯 <b class="r">깔끔하게 역할을 나눠 갖는다고 단정할 수는 없습니다.</b><br><br>
+    다만 <b class="g">한 문장을 여러 관점으로 동시에 비춰 본다</b>는 직관은 잘 들어맞습니다."</p>
+  </div>
+  <div class="hl">💡 이렇게 <b>단서를 붙여 말하는 것</b>이 정확한 설명입니다.<br>
+  "1번 헤드는 주어를 담당하고 2번은 동사를 담당한다" 식으로 말하면 <b class="r">틀린 설명</b>이 돼요.</div>
+  <aside>이 슬라이드는 발표 태도에 관한 것입니다. 아는 것과 모르는 것을 구분해서 말하면 신뢰가 올라갑니다. 퍼실도 이런 걸 높게 봅니다.</aside>
+</section>
+
+<!-- 25 -->
+<section class="slide" data-part="PART 3">
+  <h2>💾 실전 비용으로 돌아오는 것 — <span class="g">KV cache</span></h2>
+  <ul class="pts">
+    <li>생성형 모델은 답을 <b>한 토큰씩 이어 씁니다</b></li>
+    <li>그때마다 앞 토큰들의 <b>Key와 Value를 처음부터 다시 계산</b>하면 너무 낭비</li>
+    <li>→ 한 번 계산한 값을 <b>메모리에 쌓아두고 다시 꺼내 씀</b></li>
+  </ul>
+  <div class="big" style="margin-top:12px">이 임시 보관함이 <span class="y">KV cache</span></div>
+  <div class="hl">⚠️ 문장이 길어질수록 이 보관함이 차지하는 <b>메모리와 대역폭이 부담</b>이 됩니다.<br>
+  → 그래서 <b>헤드들에게 K·V를 얼마나 나눠 쓰게 할지</b>를 두고 설계가 갈립니다.</div>
+  <aside>왜 Q는 캐시 안 하냐고 물어볼 수 있습니다. Q는 지금 생성 중인 토큰의 것이라 매번 새로 필요하고, K와 V는 이미 지나간 토큰들 것이라 재사용됩니다.</aside>
+</section>
+
+<!-- 26 -->
+<section class="slide" data-part="PART 3">
+  <h2>🔤 모델 카드에서 만나는 약어 — MHA · MQA · GQA</h2>
+  <div class="tw"><table>
+    <thead><tr><th>약어</th><th>K·V를 어떻게 나눠 쓰나</th><th>특징</th></tr></thead>
+    <tbody>
+      <tr><td><b>MHA</b><br><small>Multi-Head</small></td><td>헤드마다 <b>K·V를 각자</b> 가짐</td><td>품질 ↑, 캐시 <b class="r">무거움</b></td></tr>
+      <tr><td><b>MQA</b><br><small>Multi-Query</small></td><td>모든 헤드가 <b>K·V 한 벌을 공유</b></td><td>캐시 <b class="g">가벼움</b>, 품질 손해 가능</td></tr>
+      <tr><td><b>GQA</b><br><small>Grouped-Query</small></td><td>헤드를 <b>그룹으로 묶어</b> 그룹마다 공유</td><td>둘 사이의 <b>절충안</b></td></tr>
+    </tbody>
+  </table></div>
+  <div class="hl">이 갈래를 알아두면 나중에 <b>모델 카드에서 낯선 약어를 만나도 당황하지 않습니다.</b> 😎</div>
+  <aside>외울 필요는 없고 "K,V를 얼마나 공유하느냐의 차이"라는 한 줄만 기억하면 된다고 말해주세요.</aside>
+</section>
+
+<!-- 27 -->
+<section class="slide" data-part="PART 3">
+  <h2>🔒 어텐션에 남은 구멍 — <span class="r">순서를 모릅니다</span></h2>
+  <div class="grid2">
+    <div class="box" style="text-align:center"><p style="margin:0;font-size:1.12rem"><b>학생이</b> 교사를 칭찬했다</p></div>
+    <div class="box" style="text-align:center"><p style="margin:0;font-size:1.12rem"><b>교사가</b> 학생을 칭찬했다</p></div>
+  </div>
+  <p style="text-align:center;margin-top:16px">똑같은 토큰으로 이루어져 있지만 <b class="r">순서 때문에 뜻이 뒤집힙니다.</b></p>
+  <div class="hl">Q와 K를 맞대는 계산은 <b>어느 토큰이 앞이고 뒤인지를 전혀 모릅니다.</b><br>
+  순서를 못 읽으면 이 둘을 <b>구별할 수 없습니다.</b></div>
+  <aside>두 문장을 학생들에게 소리 내어 읽게 해도 좋습니다. 순서가 뜻을 뒤집는다는 걸 체감시키세요. 대결 단골 문제입니다.</aside>
+</section>
+
+<!-- 28 -->
+<section class="slide" data-part="PART 3">
+  <h2>그래서 <span class="g">위치 인코딩</span>을 주입합니다</h2>
+  <div class="chain">
+    <div class="cell"><small>토큰</small><b>임베딩</b></div>
+    <span class="ar">+</span>
+    <div class="cell" style="border-color:var(--gold)"><small>추가</small><b>위치 정보</b></div>
+    <span class="ar">→</span>
+    <div class="cell" style="background:var(--gr);color:#fff;border:none"><small style="color:rgba(255,255,255,.75)">어텐션으로</small><b>순서를 아는 입력</b></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>방식</th><th>어떻게</th></tr></thead>
+    <tbody>
+      <tr><td><b>원래 트랜스포머</b></td><td>위치마다 <b>다른 파형</b>을 토큰에 더함</td></tr>
+      <tr><td><b>RoPE</b></td><td>벡터를 <b>위치만큼 회전</b>시킴</td></tr>
+      <tr><td><b>ALiBi</b></td><td><b>멀리 떨어진 토큰</b>일수록 점수를 깎음</td></tr>
+    </tbody>
+  </table></div>
+  <div class="hl">🔑 <b>어느 쪽을 고르냐가 그 모델이 감당할 수 있는 문장 길이를 가릅니다.</b><br>
+  (= 나중에 배울 <b>컨텍스트 윈도우 길이</b>와 직접 연결되는 지점!)</div>
+  <aside>방식 이름을 외울 필요는 없습니다. 중요한 건 마지막 노란 박스 — 위치 인코딩 방식이 컨텍스트 길이를 가른다는 연결고리입니다.</aside>
+</section>
+
+<!-- 29 -->
+<section class="slide" data-part="PART 3">
+  <h2>✅ 파트 3 정리</h2>
+  <div class="steps">
+    <div class="st"><span class="n">1</span><span class="t"><b>멀티헤드</b> — 어텐션을 여러 벌 병렬로. 각각이 <b>헤드</b>. (역할 분담은 단정 금지!)</span></div>
+    <div class="st"><span class="n">2</span><span class="t"><b>KV cache</b> — 앞 토큰의 K·V를 재사용하는 보관함. 길어지면 <b>메모리 부담</b></span></div>
+    <div class="st"><span class="n">3</span><span class="t"><b>MHA/MQA/GQA</b> — K·V를 <b>얼마나 공유하느냐</b>의 설계 차이</span></div>
+    <div class="st"><span class="n">4</span><span class="t"><b>위치 인코딩</b> — 어텐션은 순서를 모르니 <b>따로 주입</b>. 컨텍스트 길이를 가름</span></div>
+  </div>
+  <aside>조각 네 개를 정리했습니다. 이제 마지막 파트, 오늘의 클라이맥스입니다.</aside>
+</section>
+
+<!-- 30 PART4 -->
+<section class="slide" data-part="PART 4">
+  <div class="part">
+    <div class="pno">4</div>
+    <h2 style="margin:0">두 길이 여기서 만난다</h2>
+    <p style="margin-top:11px">그리고 이것은 끝이 아니라 출발점</p>
+    <span class="who">발표자 ④  ·  약 13분</span>
+  </div>
+  <aside>파트4 담당 OOO입니다. 조각을 다 모았으니 전체 그림을 보고, 오늘 강의의 진짜 메시지로 마무리하겠습니다.</aside>
+</section>
+
+<!-- 31 -->
+<section class="slide" data-part="PART 4">
+  <h2>🏛️ 트랜스포머 전체를 한 장으로</h2>
+  <div class="arch">
+    <div class="col">
+      <div class="ct">◀ 인코더 (입력을 읽는 기둥)</div>
+      <div class="blk pos">입력 임베딩 + 위치 인코딩</div>
+      <div class="blk att">Multi-Head Attention</div>
+      <div class="blk">피드포워드</div>
+      <div class="rep">▲ 이 묶음이 여러 층 반복 ▲</div>
+    </div>
+    <div class="col">
+      <div class="ct">디코더 (출력을 만드는 기둥) ▶</div>
+      <div class="blk pos">출력 임베딩 + 위치 인코딩</div>
+      <div class="blk att">Masked Multi-Head Attention</div>
+      <div class="blk att">Multi-Head Attention <small>(인코더 참조)</small></div>
+      <div class="blk">피드포워드</div>
+      <div class="rep">▲ 이 묶음이 여러 층 반복 ▲</div>
+    </div>
+  </div>
+  <div class="hl">🙆 <b>오늘 모든 블록을 외울 필요는 없습니다!</b><br>
+  가운데에서 <b>반복되는 Multi-Head Attention 블록</b>이 우리가 배운 <b>"문맥 보기"</b>를 담당한다는 점만 붙잡으세요.</div>
+  <aside>구조도를 보면 다들 겁먹는데, 외울 필요 없다고 먼저 말해주세요. 초록색 블록만 짚으면 됩니다. 두 기둥 모두 어텐션 블록이 여러 층 쌓여 있다는 점.</aside>
+</section>
+
+<!-- 32 -->
+<section class="slide" data-part="PART 4">
+  <h2>🎉 이제 <span class="g">두 갈래를 겹쳐 봅니다</span></h2>
+  <div class="grid2">
+    <div class="box">
+      <h3>🖼️ 이미지 쪽에서는</h3>
+      <p style="margin:0">CNN이 픽셀의 <b>국소 패턴을 층층이</b> 쌓아 올리며 시각을 정복</p>
+    </div>
+    <div class="box">
+      <h3>💬 언어 쪽에서는</h3>
+      <p style="margin:0">RNN·seq2seq가 순서대로 읽다 <b>병목에 막혔고</b>, <b>어텐션</b>으로 벽을 뚫음</p>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:16px"><b>서로 다른 재료, 서로 다른 벽이었습니다.</b></p>
+  <div class="merge" style="margin-top:14px">
+    <div class="key">🔑 그런데 열쇠가 같았습니다 — Attention</div>
+    <span class="ar">↓</span>
+    <div class="fin">Transformer (2017) · 두 길이 합류</div>
+  </div>
+  <aside>오늘 강의의 클라이맥스입니다. 천천히, 힘주어 말하세요.</aside>
+</section>
+
+<!-- 33 -->
+<section class="slide" data-part="PART 4">
+  <h2>⭐ 트랜스포머의 <span class="g">진짜 사건</span></h2>
+  <div class="big">언어가 벽을 넘으려고 집어 든<br><span class="y">어텐션이라는 열쇠가</span><br><span class="y">이미지 자물쇠에도 들어맞았다</span></div>
+  <ul class="pts" style="margin-top:20px">
+    <li>어텐션은 애초에 <b>언어에 대한 계산이 아니었습니다</b></li>
+    <li>하는 일은 그저 <b>여러 조각이 서로를 둘러보며 누구를 얼마나 참고할지 정하는 것</b></li>
+    <li>그 조각이 <b class="g">꼭 단어여야 한다는 조건은 어디에도 없었습니다</b></li>
+  </ul>
+  <div class="hl">그래서 <b>토큰으로 자를 수 있다면 무엇이든</b> — 픽셀도, 소리도 들어갑니다. (그 증거는 다음 강의에서!)</div>
+  <aside>여기가 오늘 가장 중요한 메시지입니다. 왜 어텐션이 범용 열쇠인지, 조각이 단어일 필요가 없다는 점을 강조하세요.</aside>
+</section>
+
+<!-- 34 -->
+<section class="slide" data-part="PART 4">
+  <h2>이 구조는 <span class="g">끝이 아니라 출발점</span>이었습니다</h2>
+  <p>같은 트랜스포머를 <b>어떻게 쌓고 어떻게 학습시키느냐</b>에 따라 두 갈래로 갈라집니다.</p>
+  <div class="grid2">
+    <div class="box">
+      <h3>📖 문장을 <b>이해</b>하는 데 특화</h3>
+      <p style="margin:0">→ <b class="g">BERT</b> 계열 (인코더)</p>
+    </div>
+    <div class="box">
+      <h3>✍️ 다음 토큰을 <b>이어 쓰는</b> 데 특화</h3>
+      <p style="margin:0">→ <b class="g">GPT</b> 계열 (디코더)</p>
+    </div>
+  </div>
+  <div class="hl">recurrence를 버리고 <b>병렬의 문을 연</b> 이 구조 위에서,<br>오늘날의 <b>LLM</b>이 세워집니다. (다음 강의 예고!) 🚀</div>
+  <aside>다음 강의로 자연스럽게 넘겨주는 슬라이드입니다. 두 갈래 이름만 소개하고 깊이 들어가진 마세요.</aside>
+</section>
+
+<!-- 35 -->
+<section class="slide" data-part="마무리">
+  <h2>📌 이것만은 꼭 — <span class="g">핵심 7문장</span></h2>
+  <div class="steps">
+    <div class="st"><span class="n">1</span><span class="t">트랜스포머는 <b>recurrence와 convolution을 전부 버리고 어텐션만</b> 남겼다</span></div>
+    <div class="st"><span class="n">2</span><span class="t">결정적 이유는 성능보다 <b>계산 방식 = 병렬화</b> (RNN은 순서가 족쇄)</span></div>
+    <div class="st"><span class="n">3</span><span class="t"><b>Q·K·V</b> = 질문 카드 · 색인표 · 책 내용 (학습된 <b>선형변환</b>으로 뽑음)</span></div>
+    <div class="st"><span class="n">4</span><span class="t">어텐션 3단계: <b>점수표 → softmax 비율 → V 섞기</b> (√d로 눌러줌)</span></div>
+    <div class="st"><span class="n">5</span><span class="t">어텐션 출력은 <b>표현의 갱신</b>이지 <b class="r">확률이 아니다</b> (확률은 출력층)</span></div>
+    <div class="st"><span class="n">6</span><span class="t">어텐션은 <b>순서를 모른다</b> → <b>위치 인코딩</b>을 따로 주입</span></div>
+    <div class="st"><span class="n">7</span><span class="t">어텐션은 언어 전용이 아니다 → <b>이미지 자물쇠에도 맞았다</b></span></div>
+  </div>
+  <aside>이 슬라이드는 사진 찍어두라고 권하세요. 대결에 거의 그대로 나옵니다.</aside>
+</section>
+
+<!-- 36 -->
+<section class="slide" data-part="마무리">
+  <h2>🎯 예상 문제 · 기본편</h2>
+  <div class="qa">
+    <div class="q"><b>Q1.</b> 트랜스포머가 버린 두 가지는 무엇이고, 남긴 하나는 무엇인가?</div>
+    <div class="q"><b>Q2.</b> 트랜스포머가 RNN을 버린 게 <b>성능보다 먼저</b> 준 이점은? 왜 RNN으로는 안 됐나?</div>
+    <div class="q"><b>Q3.</b> Q, K, V를 <b>도서관 비유</b>로 각각 설명하면?</div>
+    <div class="q"><b>Q4.</b> 어텐션의 계산 <b>3단계</b>를 순서대로 말하면?</div>
+    <div class="q"><b>Q5.</b> 어텐션에 <b>위치 인코딩</b>이 따로 필요한 이유는? 예시를 들어 설명하면?</div>
+  </div>
+  <aside>여기서 실제로 학생들을 지목해 답하게 하세요. 퀘스트 규칙상 예상 문제 풀이로 마무리하는 게 좋습니다.</aside>
+</section>
+
+<!-- 37 -->
+<section class="slide" data-part="마무리">
+  <h2>🎯 예상 문제 · 심화 &amp; 함정편</h2>
+  <div class="qa">
+    <div class="q"><b>Q6.</b> 🪤 "어텐션이 다음 토큰의 확률을 계산한다" — 맞을까? 틀리다면 무엇이 맞나?</div>
+    <div class="q"><b>Q7.</b> Q·K 점수를 <b>√d로 나누는</b> 이유는?</div>
+    <div class="q"><b>Q8.</b> <b>causal mask</b>는 무엇을 막기 위한 장치인가?</div>
+    <div class="q"><b>Q9.</b> <b>KV cache</b>는 왜 필요하고, 무엇이 부담이 되나?</div>
+    <div class="q"><b>Q10.</b> 어텐션이 언어를 넘어 이미지·소리까지 갈 수 있었던 <b>근본 이유</b>는?</div>
+  </div>
+  <div class="hl">💡 <b>Q6 힌트:</b> 어텐션은 표현을 <b>갱신</b>할 뿐, 확률은 맨 끝 <b>출력층</b>의 몫!</div>
+  <aside>함정 문제 Q6은 꼭 한 번 더 짚어주세요. 그리고 Q10은 다음 강의 예고와도 이어집니다.</aside>
+</section>
+
+<!-- 38 -->
+<section class="slide" data-part="마무리">
+  <div class="cover">
+    <h1>감사합니다 🙏</h1>
+    <div class="big" style="margin-top:26px">버린 것은 <span class="y">순환과 합성곱</span><br>남긴 것은 <span class="y">어텐션 하나</span><br><br>그리고 그 하나가 <span class="y">두 길을 합쳤습니다</span></div>
+    <p class="sub" style="margin-top:24px">질문 받겠습니다!</p>
+  </div>
+  <aside>질문 시간입니다. 모르는 질문이 나오면 "확인해서 알려드리겠습니다"라고 솔직히 말하는 게 낫습니다. 억지로 지어내면 감점입니다.</aside>
+</section>
+
+</div>
+
+<div class="notes" id="notes"><span class="lab">발표 대본</span><div id="noteTxt"></div></div>
+
+<script>
+  var S=[].slice.call(document.querySelectorAll('.slide')), i=0;
+  function draw(){
+    S.forEach(function(s,n){s.classList.toggle('on',n===i)});
+    document.getElementById('bar').style.width=((i+1)/S.length*100)+'%';
+    document.getElementById('pg').textContent=(i+1)+' / '+S.length;
+    document.getElementById('topL').textContent=S[i].dataset.part||'';
+    var a=S[i].querySelector('aside');
+    document.getElementById('noteTxt').textContent=a?a.textContent:'(대본 없음)';
+    try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  }
+  function go(d){i=Math.min(S.length-1,Math.max(0,i+d));draw()}
+  function tgN(){document.getElementById('notes').classList.toggle('on')}
+  function tgT(){var r=document.documentElement,d=r.getAttribute('data-theme');
+    var dark=d==='dark'||(!d&&matchMedia('(prefers-color-scheme:dark)').matches);
+    r.setAttribute('data-theme',dark?'light':'dark')}
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(-1)}
+    else if(e.key==='Home'){i=0;draw()} else if(e.key==='End'){i=S.length-1;draw()}
+    else if(e.key==='s'||e.key==='S'){tgN()}
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  });
+  document.getElementById('deck').addEventListener('click',function(e){
+    if(e.target.closest('.btn'))return;
+    go(e.clientX < innerWidth*0.32 ? -1 : 1);
+  });
+  var h=parseInt((location.hash||'').replace('#',''),10);
+  if(h>0&&h<=S.length)i=h-1;
+  draw();
+</script>
+</body>
+</html>
