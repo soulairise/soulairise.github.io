@@ -473,29 +473,29 @@
 <section class="slide" data-part="파트 1 · ❓ 질문 3">
   <div class="ask">
     <div class="mark">❓</div>
-    <div class="q">모델 · 에이전트 · 하네스 · 루프.<br>세 가지 실패는 각각 <span class="y">어느 것의 문제</span>일까요?</div>
-    <div class="hint">잘못 고름 / 잘못 읽음 / 반복 — 셋을 짝지어 보세요</div>
+    <div class="q">세 가지 실패는 각각 <span class="y">누구 탓</span>일까요?</div>
+    <div class="hint">잘못 고름 · 잘못 읽음 · 반복 — 셋을 각각 누구 탓이라 해야 할까요</div>
   </div>
-  <aside>조금 어려운 질문입니다. 답이 안 나와도 괜찮다고 말해 주고 20초만 기다린 뒤 넘기세요.</aside>
+  <aside>여기서 청중에게 물어보세요. "AI가 이상해"라고만 하면 못 고친다는 얘기를 미리 깔아 두면 답이 잘 나옵니다. 20초 기다린 뒤 넘기세요.</aside>
 </section>
 
 <!-- 14 💡A3 -->
 <section class="slide" data-part="파트 1 · 💡 정답 3">
   <div class="rev">
-    <div class="rq"><b>Q.</b> 세 가지 실패는 각각 어느 것의 문제일까요?</div>
-    <div class="tw"><table class="sm">
-      <thead><tr><th>낱말</th><th>쉽게 말하면</th><th>어느 실패</th></tr></thead>
+    <div class="rq"><b>Q.</b> 세 가지 실패는 각각 누구 탓일까요?</div>
+    <div class="ra">탓이 셋 다 다릅니다 — <span class="y">계약 탓 · 모델 탓 · 멈춤을 안 정한 탓</span></div>
+    <div class="tw more"><table class="sm">
+      <thead><tr><th>실패</th><th>누구 탓</th><th>그래서 무엇을 고치나</th></tr></thead>
       <tbody>
-        <tr><td><b>모델</b></td><td>다음 말을 고르는 <b>엔진</b>. 혼자서는 답하는 것 말고 아무 일도 안 함</td><td><b class="r">잘못 읽음</b></td></tr>
-        <tr><td><b>에이전트</b></td><td>과업을 <b>스스로 진행하는 역할</b>. 모델이 두뇌를 맡음</td><td><b class="r">잘못 고름</b></td></tr>
-        <tr><td><b>하네스</b></td><td>검사·실행·결과 전달을 맡는 <b>조수</b></td><td rowspan="2" style="vertical-align:middle"><b class="r">같은 실수 반복</b></td></tr>
-        <tr><td><b>루프</b></td><td>그 과정이 <b>돌고 도는 구조</b></td></tr>
+        <tr><td><b>도구를 잘못 고름</b></td><td><b class="r">계약 탓</b><br><small style="color:var(--soft)">도구 설명이 모호했다</small></td><td>설명과 "언제 쓰고 안 쓰는지"를 다시 씁니다</td></tr>
+        <tr><td><b>결과를 잘못 읽음</b></td><td><b class="r">모델 탓</b><br><small style="color:var(--soft)">돌아온 값을 제대로 안 읽었다</small></td><td>돌려주는 값을 줄이고 무엇을 근거로 쓸지 못 박습니다</td></tr>
+        <tr><td><b>같은 실수를 반복</b></td><td><b class="r">멈춤을 안 정한 탓</b><br><small style="color:var(--soft)">아무도 브레이크를 안 달았다</small></td><td>기록을 남기고 멈춤 조건을 정합니다</td></tr>
       </tbody>
     </table></div>
-    <div class="plain"><span class="lab">왜 나눠 부르나</span>같은 모델이 단순 질문답변에 쓰이면 에이전트라 부르지 않고, <b>과업의 경계를 정해 실행에 나서는 구성</b> 속에 놓이면 에이전트라 부릅니다.</div>
-    <div class="hl"><b class="g">낱말을 가려 쓰는 것은 어휘의 문제가 아니라 실패가 어디서 났는지 가리는 일입니다.</b></div>
+    <div class="plain"><span class="lab">병원에 비유하면</span>배가 아프다고만 하면 못 고칩니다. <b>위염인지 맹장인지</b> 가려야 처방이 나옵니다. 마찬가지로 <b>"AI가 이상해"로는 고칠 곳을 못 정합니다.</b></div>
+    <div class="hl"><b class="g">탓을 가리는 것은 남 탓하려는 게 아니라 고칠 문서를 정하는 일입니다.</b> 반복은 모델이 멍청해서가 아니라 <b class="r">멈추라고 정해 둔 사람이 없어서</b> 생깁니다.</div>
   </div>
-  <aside>네 낱말은 계층입니다. 모델이 에이전트의 두뇌이고, 하네스가 그 두뇌를 도구와 이으며, 루프가 그 연결이 도는 형태라고 정리해 주세요.</aside>
+  <aside>여기서 앞의 네 낱말과 이어 주세요. 계약 탓은 에이전트가 고를 근거의 문제, 모델 탓은 모델이 읽는 문제, 멈춤 탓은 하네스와 루프의 문제입니다. 그리고 반복은 모델을 바꿔도 안 낫고 브레이크를 달아야 낫는다는 점을 강조하세요.</aside>
 </section>
 
 <!-- 15 파트1 정리 -->
