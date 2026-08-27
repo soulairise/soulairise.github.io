@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>도구 설계 — 에이전트에게 무엇을 줄 것인가</title>
+<style>
+  :root{
+    --bg:#faf8f4; --bg2:#f2ede4; --card:#fff; --ink:#2a2723; --soft:#6b6357;
+    --line:#e3dacb; --gr:#3f6b5f; --gr2:#2c4d44; --gold:#c8a15a; --red:#a65a3f;
+    --sh:0 2px 6px rgba(60,50,30,.07),0 10px 30px rgba(60,50,30,.07);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#17140f; --bg2:#201b14; --card:#221d16; --ink:#ece5d8; --soft:#a89e8c;
+    --line:#3a3126; --gr:#7fb3a2; --gr2:#5d9384; --gold:#d9b877; --red:#d68a6c;
+    --sh:0 2px 6px rgba(0,0,0,.3),0 12px 34px rgba(0,0,0,.4);}}
+  :root[data-theme="dark"]{--bg:#17140f;--bg2:#201b14;--card:#221d16;--ink:#ece5d8;--soft:#a89e8c;
+    --line:#3a3126;--gr:#7fb3a2;--gr2:#5d9384;--gold:#d9b877;--red:#d68a6c;
+    --sh:0 2px 6px rgba(0,0,0,.3),0 12px 34px rgba(0,0,0,.4);}
+  :root[data-theme="light"]{--bg:#faf8f4;--bg2:#f2ede4;--card:#fff;--ink:#2a2723;--soft:#6b6357;
+    --line:#e3dacb;--gr:#3f6b5f;--gr2:#2c4d44;--gold:#c8a15a;--red:#a65a3f;
+    --sh:0 2px 6px rgba(60,50,30,.07),0 10px 30px rgba(60,50,30,.07);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+
+  .deck{height:100vh;display:grid;place-items:center;padding:56px 40px 78px}
+  .slide{display:none;width:100%;max-width:1000px;animation:in .25s ease}
+  .slide.on{display:block}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  h1{font-size:clamp(2rem,5vw,3.3rem);font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  h2{font-size:clamp(1.45rem,3.3vw,2.2rem);font-weight:800;letter-spacing:-.015em;margin-bottom:20px;line-height:1.25}
+  h3{font-size:clamp(1.02rem,2vw,1.28rem);font-weight:750;margin-bottom:10px}
+  p{font-size:clamp(.96rem,1.55vw,1.12rem);color:var(--soft);margin-bottom:13px}
+  b{color:var(--ink)}
+  .g{color:var(--gr);font-weight:750}
+  .r{color:var(--red);font-weight:750}
+  .o{color:var(--gold);font-weight:750}
+
+  .cover{text-align:center}
+  .cover .kick{color:var(--gr);letter-spacing:.3em;font-size:.8rem;font-weight:700;text-transform:uppercase}
+  .cover .sub{margin-top:22px;color:var(--soft);font-size:1.05rem}
+  .part{text-align:center;padding:34px 0}
+  .part .pno{display:inline-grid;place-items:center;width:74px;height:74px;border-radius:22px;
+    background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;font-size:1.9rem;font-weight:800;margin-bottom:22px}
+  .part .who{margin-top:18px;display:inline-block;background:var(--bg2);border:1px solid var(--line);
+    border-radius:20px;padding:7px 18px;font-size:.9rem;color:var(--soft)}
+
+  ul.pts{list-style:none;display:grid;gap:12px}
+  ul.pts li{position:relative;padding-left:29px;font-size:clamp(.95rem,1.65vw,1.16rem);color:var(--soft)}
+  ul.pts li::before{content:"›";position:absolute;left:8px;color:var(--gr);font-weight:800;font-size:1.2em;line-height:1}
+  ul.pts li b{color:var(--ink)}
+
+  .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 22px;box-shadow:var(--sh)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  .hl{background:var(--bg2);border-left:4px solid var(--gold);border-radius:0 12px 12px 0;
+    padding:15px 19px;margin-top:17px;font-size:clamp(.93rem,1.55vw,1.08rem);color:var(--soft)}
+  .hl b{color:var(--gr)}
+  .big{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;border-radius:18px;
+    padding:26px 28px;text-align:center;font-size:clamp(1.05rem,2.2vw,1.55rem);font-weight:750;line-height:1.5}
+  .big .y{color:var(--gold)}
+
+  .chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+  .cell{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 15px;
+    text-align:center;box-shadow:var(--sh);min-width:92px}
+  .cell small{display:block;color:var(--soft);font-size:.72rem;margin-bottom:2px}
+  .cell b{font-size:.93rem}
+  .cell.dim{opacity:.45}
+  .cell.hot{background:linear-gradient(135deg,var(--gr),var(--gr2));border-color:transparent}
+  .cell.hot b,.cell.hot small{color:#fff}
+  .ar{color:var(--gr);font-size:1.3rem;font-weight:700}
+
+  table{border-collapse:collapse;width:100%;font-size:clamp(.83rem,1.45vw,1rem)}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--bg2);font-weight:750;color:var(--ink)}
+  td{color:var(--soft)}td b{color:var(--ink)}
+  tr:last-child td{border-bottom:none}
+  .tw{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table.sm{font-size:clamp(.76rem,1.3vw,.92rem)}
+  table.sm th,table.sm td{padding:8px 11px}
+
+  .qk{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:8px}
+  @media(max-width:760px){.qk{grid-template-columns:1fr}}
+  .qk .c{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:var(--sh);text-align:center}
+  .qk .c .l{font-size:1.8rem;font-weight:800;color:var(--gr)}
+  .qk .c .n{font-weight:750;margin:6px 0 4px}
+  .qk .c small{color:var(--soft);font-size:.84rem;line-height:1.45;display:block}
+  .qk.four{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:760px){.qk.four{grid-template-columns:1fr 1fr}}
+
+  .steps{display:grid;gap:9px}
+  .st{display:flex;gap:13px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:12px 16px;box-shadow:var(--sh)}
+  .st .n{flex:none;width:26px;height:26px;border-radius:8px;background:var(--gr);color:#fff;
+    display:grid;place-items:center;font-weight:800;font-size:.8rem}
+  .st .t{font-size:clamp(.9rem,1.55vw,1.05rem);color:var(--soft)}
+  .st .t b{color:var(--ink)}
+  .steps.tight{gap:6px}
+  .steps.tight .st{padding:8px 14px}
+  .steps.tight .st .t{font-size:clamp(.84rem,1.4vw,.98rem)}
+  .steps.tight .st .n{width:23px;height:23px;font-size:.74rem}
+
+  .flow{display:grid;gap:8px;justify-items:center;margin:14px 0}
+  .flow .f{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 22px;
+    box-shadow:var(--sh);text-align:center;font-size:clamp(.86rem,1.5vw,1.02rem);min-width:min(100%,520px)}
+  .flow .f.key{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;border-color:transparent;font-weight:750}
+  .flow .d{color:var(--gr);font-weight:800}
+
+  .qa{display:grid;gap:10px}
+  .qa .q{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gr);
+    border-radius:0 12px 12px 0;padding:12px 16px;font-size:clamp(.87rem,1.45vw,1.02rem);color:var(--soft)}
+  .qa .q b{color:var(--gr)}
+  .qa .q i{font-style:normal;color:var(--ink);font-weight:700}
+  .qa.trap .q{border-left-color:var(--red)}
+  .qa.trap .q b{color:var(--red)}
+
+  code{font-family:"SF Mono",Menlo,Consolas,monospace;background:var(--bg2);
+    padding:2px 7px;border-radius:5px;font-size:.9em}
+  pre{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px 17px;
+    overflow-x:auto;font-size:clamp(.76rem,1.3vw,.92rem);line-height:1.7;
+    font-family:"SF Mono",Menlo,Consolas,monospace;color:var(--ink);margin:11px 0}
+
+  /* 네 조건 다이어그램 */
+  .cond{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0}
+  .cond .mid{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;border-radius:14px;
+    padding:12px;text-align:center;font-weight:800;margin:0 auto 12px;max-width:230px}
+  .cond .mid small{display:block;color:var(--gold);font-size:.72rem;font-weight:700}
+  .cond .four{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:760px){.cond .four{grid-template-columns:1fr 1fr}}
+  .cond .four .c{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:11px 9px;text-align:center;box-shadow:var(--sh)}
+  .cond .four .c b{display:block;font-size:.98rem;margin-bottom:3px}
+  .cond .four .c small{color:var(--soft);font-size:.75rem;line-height:1.4;display:block}
+  .cond .four .c.pr{border-color:var(--gr);border-width:2px}
+  .cond .cap{text-align:center;font-size:.75rem;color:var(--soft);margin-top:11px}
+
+  /* 자율성 스펙트럼 */
+  .spec{position:relative;background:var(--bg2);border:1px solid var(--line);border-radius:16px;
+    padding:20px 18px 16px;margin:14px 0}
+  .spec .rail{height:6px;border-radius:6px;background:linear-gradient(90deg,var(--gr),var(--gold),var(--red));margin:0 8px 16px}
+  .spec .row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:760px){.spec .row{grid-template-columns:1fr}}
+  .spec .s{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 13px;box-shadow:var(--sh)}
+  .spec .s b{display:block;font-size:.95rem;margin-bottom:4px}
+  .spec .s small{color:var(--soft);font-size:.78rem;line-height:1.45;display:block}
+  .spec .gate{margin-top:13px;text-align:center;font-size:.82rem;color:var(--red);font-weight:750}
+
+  /* 우선권 계단 */
+  .prio{display:grid;gap:7px;margin:14px 0}
+  .prio .p{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:11px 16px;box-shadow:var(--sh)}
+  .prio .p .k{flex:none;border-radius:9px;padding:4px 11px;font-size:.78rem;font-weight:800;color:#fff}
+  .prio .p .t{font-size:clamp(.85rem,1.45vw,1rem);color:var(--soft)}
+  .prio .p .t b{color:var(--ink)}
+  .prio .p1 .k{background:var(--gr2)}.prio .p2 .k{background:var(--gr)}
+  .prio .p3 .k{background:var(--gold)}.prio .p4 .k{background:var(--red)}
+  .prio .p4{border-style:dashed}
+
+  /* 메시지 배열 */
+  .msgs{display:grid;gap:7px;margin:12px 0}
+  .msgs .m{display:flex;gap:11px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;padding:9px 14px;box-shadow:var(--sh);font-size:clamp(.8rem,1.35vw,.95rem)}
+  .msgs .m .rl{flex:none;width:76px;font-family:"SF Mono",Menlo,monospace;font-size:.74rem;font-weight:800;color:var(--gr)}
+  .msgs .m.a .rl{color:var(--gold)}
+  .msgs .m .cn{color:var(--soft)}
+  .msgs .loop{text-align:center;font-size:.8rem;color:var(--red);font-weight:750;margin-top:4px}
+
+  /* 복잡도 사다리 */
+  .lad{display:grid;gap:8px;margin:13px 0}
+  .lad .l{display:flex;gap:13px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:11px 16px;box-shadow:var(--sh)}
+  .lad .l .n{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+    font-weight:800;font-size:.88rem;background:var(--bg2);color:var(--gr);border:1px solid var(--line)}
+  .lad .l0 .n{background:var(--gr);color:#fff;border-color:transparent}
+  .lad .l .t{font-size:clamp(.85rem,1.45vw,1rem);color:var(--soft)}
+  .lad .l .t b{color:var(--ink)}
+  .lad .l .ex{margin-left:auto;flex:none;font-size:.74rem;color:var(--soft);background:var(--bg2);
+    border-radius:14px;padding:4px 11px;border:1px solid var(--line)}
+  @media(max-width:760px){.lad .l .ex{display:none}}
+
+  /* 좁은 화면: 발표 덱이지만 폰에서도 읽히게 세로 스크롤을 허용한다 */
+  @media (max-width:760px){
+    body{overflow:auto}
+    .deck{height:auto;min-height:100vh;padding:50px 15px 94px;place-items:start center}
+    .slide{max-width:100%}
+    h2{margin-bottom:14px}
+    table.sm th,table.sm td{padding:6px 7px}
+    pre{font-size:.72rem;padding:11px 12px}
+    .cond .four .c small{font-size:.68rem}
+  }
+  /* 지표 카드 */
+  .met{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:12px 0}
+  .met .hd{display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+  .met .hd b{font-size:1.05rem;color:var(--gr)}
+  .met .hd .use{font-size:.74rem;color:var(--soft);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:3px 10px}
+  .met .no{color:var(--red);font-weight:750}
+  /* 계산 박스 */
+  .calc{display:grid;gap:8px;margin:12px 0}
+  .calc .row{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:10px 15px;box-shadow:var(--sh);font-size:clamp(.85rem,1.45vw,1rem)}
+  .calc .row .lab{flex:none;width:88px;font-weight:750;color:var(--gr)}
+  .calc .row .val{margin-left:auto;font-family:"SF Mono",Menlo,monospace;font-weight:800;color:var(--ink)}
+  .calc .row.hot{background:linear-gradient(135deg,var(--gr),var(--gr2));border-color:transparent}
+  .calc .row.hot .lab,.calc .row.hot .val,.calc .row.hot span{color:#fff}
+  /* 사진 */
+  figure{margin:10px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg2)}
+  figure img{display:block;width:100%;height:auto;max-height:46vh;object-fit:cover}
+  figcaption{padding:9px 14px;font-size:.72rem;color:var(--soft);line-height:1.5}
+  .qa.tight{gap:7px}
+  .qa.tight .q{padding:9px 14px;font-size:clamp(.83rem,1.35vw,.96rem)}
+  /* 질문 카드 — 청중에게 먼저 던지는 장 */
+  .ask{text-align:center;padding:20px 0}
+  .ask .mark{display:inline-grid;place-items:center;width:70px;height:70px;border-radius:24px;
+    background:linear-gradient(135deg,var(--gold),#a8853f);color:#fff;font-size:2rem;font-weight:800;margin-bottom:20px}
+  .ask .q{font-size:clamp(1.3rem,3vw,2rem);font-weight:800;line-height:1.45;letter-spacing:-.015em;
+    max-width:820px;margin:0 auto}
+  .ask .q .y{color:var(--gold)}
+  .ask .hint{margin-top:22px;display:inline-block;background:var(--bg2);border:1px solid var(--line);
+    border-radius:20px;padding:7px 18px;font-size:.86rem;color:var(--soft)}
+  /* 정답 공개 카드 */
+  .rev .rq{background:var(--bg2);border-left:4px solid var(--gold);border-radius:0 12px 12px 0;
+    padding:11px 16px;font-size:clamp(.88rem,1.5vw,1.02rem);color:var(--soft);margin-bottom:16px}
+  .rev .rq b{color:var(--ink)}
+  .rev .ra{background:linear-gradient(135deg,var(--gr),var(--gr2));color:#fff;border-radius:16px;
+    padding:20px 24px;font-size:clamp(1.02rem,2vw,1.35rem);font-weight:750;line-height:1.55;text-align:center}
+  .rev .ra .y{color:var(--gold)}
+  .rev .more{margin-top:14px}
+  /* 호출 한 바퀴 */
+  .cyc{display:grid;gap:7px;margin:12px 0}
+  .cyc .s{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:10px 15px;box-shadow:var(--sh);font-size:clamp(.85rem,1.45vw,1rem)}
+  .cyc .s .n{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+    font-weight:800;font-size:.78rem;background:var(--bg2);color:var(--gr);border:1px solid var(--line)}
+  .cyc .s.model .n{background:var(--gr);color:#fff;border-color:transparent}
+  .cyc .s.harness .n{background:var(--red);color:#fff;border-color:transparent}
+  .cyc .s .who{margin-left:auto;flex:none;font-size:.73rem;color:var(--soft);background:var(--bg2);
+    border:1px solid var(--line);border-radius:12px;padding:3px 10px}
+  /* 트레이스 원문 */
+  .tr{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:10px 0;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:clamp(.7rem,1.2vw,.85rem);line-height:1.75;
+    overflow-x:auto;white-space:pre}
+  .tr .m{color:var(--gr);font-weight:700}
+  .tr .h{color:var(--red);font-weight:700}
+  .tr .k{color:var(--gold);font-weight:700}
+  .bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gr),var(--gold));transition:width .25s;z-index:20}
+  .topL{position:fixed;top:13px;left:19px;font-size:.74rem;color:var(--soft);letter-spacing:.06em;z-index:15}
+  .topR{position:fixed;top:10px;right:17px;display:flex;gap:6px;z-index:15}
+  .btn{background:var(--card);border:1px solid var(--line);color:var(--soft);border-radius:16px;
+    padding:5px 12px;font-size:.73rem;cursor:pointer}
+  .btn:hover{border-color:var(--gr);color:var(--gr)}
+  .pg{position:fixed;bottom:13px;right:19px;font-size:.77rem;color:var(--soft);z-index:15}
+  .nav{position:fixed;bottom:10px;left:19px;display:flex;gap:6px;z-index:15}
+  .notes{position:fixed;left:0;right:0;bottom:0;background:var(--gr2);color:#fff;padding:14px 24px 16px;
+    font-size:.88rem;line-height:1.6;display:none;z-index:18;max-height:38vh;overflow-y:auto}
+  .notes.on{display:block}
+  .notes .lab{color:var(--gold);font-weight:800;font-size:.7rem;letter-spacing:.14em;display:block;margin-bottom:5px}
+  aside{display:none}
+  /* 좁은 화면 보정 — 기본 규칙보다 뒤에 두어야 적용된다 */
+  @media (max-width:760px){
+    .tr{white-space:pre-wrap;word-break:break-word;font-size:.68rem;padding:10px 12px;line-height:1.65}
+    .ask .q{font-size:clamp(1.05rem,4.6vw,1.4rem)}
+    .ask .mark{width:54px;height:54px;font-size:1.5rem;margin-bottom:14px}
+    .rev .ra{font-size:clamp(.95rem,3.6vw,1.15rem);padding:16px 18px}
+    .rev .rq{font-size:.86rem;padding:10px 13px}
+    .cyc .s .who{display:none}
+    .cyc .s{padding:9px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="topL" id="topL"></div>
+<div class="topR">
+  <button class="btn" onclick="tgN()">🗒 대본 (S)</button>
+  <button class="btn" onclick="tgT()">🌗</button>
+</div>
+<div class="nav">
+  <button class="btn" onclick="go(-1)">←</button>
+  <button class="btn" onclick="go(1)">→</button>
+</div>
+<div class="pg" id="pg"></div>
+
+<div class="deck" id="deck">
+
+<!-- 1 표지 -->
+<section class="slide" data-part="표지">
+  <div class="cover">
+    <span class="kick">프롬프트 엔지니어링 · 노드 4 · 1~4강</span>
+    <h1 style="margin:20px 0">에이전트에게<br>무엇을 줄 것인가</h1>
+    <p class="sub">도구 설계 — 실패의 세 순간부터 최소 하네스까지<br>3인 팀 발표 · 총 45분</p>
+  </div>
+  <aside>안녕하세요. 오늘 저희 세 명이 도구 설계를 맡았습니다. 붙잡을 문장은 하나입니다. "도구 설계의 질문은 모델이 도구를 가졌는가가 아니라, 세 실패 순간을 어느 경계에서 막는가이다." 여기서 5초 쉬고 넘어갑니다.</aside>
+</section>
+
+<!-- 2 지도 -->
+<section class="slide" data-part="표지">
+  <h2>🗺️ 오늘의 지도 — 세 걸음</h2>
+  <div class="tw"><table class="sm">
+    <thead><tr><th>파트</th><th>다루는 것</th><th>담당</th><th>핵심 한 줄</th></tr></thead>
+    <tbody>
+      <tr><td><b>1</b></td><td>1강 — 실패의 세 순간 · 호출의 한 바퀴 · 네 낱말</td><td>발표자 ① · 15분</td><td>모델은 <b>요청만</b> 쓴다</td></tr>
+      <tr><td><b>2</b></td><td>2강 — 도구 설명은 지시다 · 텍스트 규약에서 MCP까지</td><td>발표자 ② · 15분</td><td>계약을 쓰는 일이 곧 <b>프롬프트를 쓰는 일</b></td></tr>
+      <tr><td><b>3</b></td><td>3·4강 — 도구 정의서 · 최소 하네스 여섯 지점</td><td>발표자 ③ · 15분</td><td>같은 모델, 다른 하네스는 <b>다른 에이전트</b></td></tr>
+    </tbody>
+  </table></div>
+  <div class="hl">🎯 오늘은 <b>질문을 먼저 던지고 다음 장에서 답을 공개</b>합니다. 화면에 ❓가 뜨면 먼저 생각해 보시고, 몇 분께 여쭙겠습니다.</div>
+  <aside>발표 형식을 미리 알려 주세요. 질문 장에서 반드시 멈추고 청중에게 물어야 합니다. 답을 바로 넘기면 이 덱의 의미가 없습니다. 그리고 3강과 4강을 한 파트로 묶은 이유는 도구 정의서가 여섯 지점 중 둘째 항목이라 이어서 말해야 흐름이 끊기지 않기 때문입니다.</aside>
+</section>
+
+<!-- ══════════ PART 1 ══════════ -->
+<!-- 3 -->
+<section class="slide" data-part="파트 1 · 실패의 세 순간">
+  <div class="part">
+    <div class="pno">1</div>
+    <h2 style="margin-bottom:8px">실패의 세 순간</h2>
+    <p>말하는 모델이 행동하는 에이전트가 되는 조건 · 호출의 한 바퀴 · 네 낱말</p>
+    <div class="who">발표자 ① · 약 15분</div>
+  </div>
+  <aside>파트 1 시작합니다. 도구를 연결하는 일이 끝이 아니라 시작이라는 점부터 말합니다.</aside>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-part="파트 1 · 실패의 세 순간">
+  <h2>말하는 모델이 행동하는 에이전트가 되는 순간</h2>
+  <p>언어 모델은 본래 <b>다음에 올 텍스트를 생성할 뿐</b>, 부산 창고에 재고가 몇 개 남았는지 알 길이 없습니다. 조회 도구를 호출할 수 있게 연결되는 순간, 모델은 세계를 관찰하고 바꾸는 <b class="g">에이전트</b>로 거듭납니다.</p>
+  <div class="big">그러나 도구를 잇는 일은 과업의 완성이 아니라<br><span class="y">새로운 판단 연쇄의 시작</span>입니다</div>
+  <ul class="pts" style="margin-top:16px">
+    <li>조회 도구를 <b>스스로 골라야</b> 하고</li>
+    <li>올바른 상품 코드와 창고 코드를 <b>채워야</b> 하며</li>
+    <li>돌아온 수량을 질문의 조건에 맞게 <b>해석해야</b> 합니다</li>
+  </ul>
+  <div class="hl">이 연결 가운데 <b class="r">하나만 어긋나도</b> 답은 그럴듯하지만 쓸 수 없게 됩니다.</div>
+  <aside>여기서 청중에게 한 번 미리 신호를 주세요. "그럴듯한데 쓸 수 없는 답"이 오늘의 핵심 표현입니다. 다음 장이 첫 질문입니다.</aside>
+</section>
+
+<!-- 5 ❓Q1 -->
+<section class="slide" data-part="파트 1 · ❓ 질문 1">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">재고를 물었는데 답이 <span class="y">그럴듯한데 쓸 수 없습니다.</span><br>어긋날 수 있는 순간은 <span class="y">몇 개</span>이고, 각각 무엇일까요?</div>
+    <div class="hint">먼저 생각해 보세요 · 30초</div>
+  </div>
+  <aside>여기서 반드시 멈추세요. 두세 분께 물어봅니다. 답이 안 나오면 힌트를 주세요. "도구를 고르는 자리, 결과를 읽는 자리, 그리고 그다음." 그러고 나서 넘깁니다.</aside>
+</section>
+
+<!-- 6 💡A1 -->
+<section class="slide" data-part="파트 1 · 💡 정답 1">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> 재고를 물었는데 답이 그럴듯한데 쓸 수 없습니다. 어긋날 수 있는 순간은 몇 개이고 각각 무엇일까요?</div>
+    <div class="ra">세 순간입니다 —<br><span class="y">잘못 고르는 순간 · 잘못 읽는 순간 · 같은 실수를 반복하는 순간</span></div>
+    <div class="tw more"><table class="sm">
+      <thead><tr><th>실패 순간</th><th>어떻게 나타나나</th></tr></thead>
+      <tbody>
+        <tr><td><b>① 도구를 잘못 고름</b></td><td>재고를 확인해야 하는데 주문 조회 도구를 고르거나, 읽기 요청에 <b>변경 도구</b>를 고릅니다. 이후 문장이 아무리 자연스러워도 근거가 달라집니다</td></tr>
+        <tr><td><b>② 결과를 잘못 읽음</b></td><td>반환값의 <b>수량·시각·창고 식별자</b>를 놓치면 실제 조회를 했어도 다른 사실을 답합니다</td></tr>
+        <tr><td><b>③ 같은 실수를 반복</b></td><td>실패한 호출과 그 이유를 남기고 판정하지 않으면 <b>비슷한 요청에 같은 인자</b>를 다시 보냅니다</td></tr>
+      </tbody>
+    </table></div>
+    <div class="hl">도구 설계의 질문은 <b class="r">모델이 도구를 가졌는가</b>가 아니라 <b class="g">이 세 순간을 어느 경계에서 알아차리고 막는가</b>입니다.</div>
+  </div>
+  <aside>이 세 순간이 오늘 전체를 관통합니다. 파트 3에서 우리가 실제로 겪은 실패도 이 중 하나라고 예고해 주세요.</aside>
+</section>
+
+<!-- 7 ❓Q2 -->
+<section class="slide" data-part="파트 1 · ❓ 질문 2">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">모델이 도구를 <span class="y">직접 실행</span>할까요?<br>실행하지 않는다면, <span class="y">누가</span> 실행할까요?</div>
+    <div class="hint">손을 들어 보세요 · 실행한다 / 안 한다</div>
+  </div>
+  <aside>거수로 물어보세요. 실행한다고 생각하는 분이 꽤 있을 겁니다. 그 오해를 깨는 것이 이 파트의 핵심입니다.</aside>
+</section>
+
+<!-- 8 💡A2 -->
+<section class="slide" data-part="파트 1 · 💡 정답 2">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> 모델이 도구를 직접 실행할까요? 누가 실행할까요?</div>
+    <div class="ra">모델은 실행하지 않습니다.<br>모델이 하는 일은 <span class="y">도구 이름과 인자를 담은 요청 문장을 쓰는 일</span>뿐입니다.<br>실행은 <span class="y">하네스</span>가 합니다</div>
+    <div class="hl more"><b>하네스(harness)</b> — 모델과 도구 사이의 실행 장치. 요청된 도구가 <b>허용 목록</b>에 있는지 확인하고, 인자가 <b>계약한 형식</b>에 맞는지 검사한 뒤 실행하고, 그 결과를 <b>다시 모델의 입력에 넣어</b> 돌려주는 사이클의 집행자입니다.</div>
+    <div class="callout" style="margin-top:12px;background:var(--bg2);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:12px 16px;font-size:.92rem;color:var(--soft)">
+      이름은 <b>말이 끄는 수레에 채우는 마구</b>에서 왔습니다. 마구는 말의 힘을 그 자체로 놓아 두지 않고 수레와 연결해 <b>힘이 실제 일이 되게</b> 합니다. 모델이 다음 토큰을 고르는 엔진이라면, 하네스는 그 선택이 바깥 세계와 이어지게 하는 <b>차체이자 연결부</b>입니다.
+    </div>
+  </div>
+  <aside>마구 비유를 꼭 말해 주세요. 소프트웨어에서 테스트 하네스라는 이름도 같은 뿌리입니다. 동력 그 자체가 아니라 동력을 실제 일로 바꾸는 연결 장치라는 공통점이 있습니다.</aside>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-part="파트 1 · 실패의 세 순간">
+  <h2>도구 호출의 한 바퀴</h2>
+  <div class="cyc">
+    <div class="s"><div class="n">①</div><span>도구 정의를 요청에 포함</span><span class="who">앱</span></div>
+    <div class="s model"><div class="n">②</div><span>호출 요청 JSON 생성 — <b>요청만 쓰고 실행은 안 함</b></span><span class="who">모델</span></div>
+    <div class="s harness"><div class="n">③</div><span>검증 · 실행 — <b>실제 실행은 여기서</b></span><span class="who">하네스·앱</span></div>
+    <div class="s model"><div class="n">④</div><span>결과를 입력으로 반환</span><span class="who">모델</span></div>
+    <div class="s model"><div class="n">⑤</div><span>근거로 답 완성</span><span class="who">모델</span></div>
+  </div>
+  <div class="hl">연쇄 호출 — 결과를 읽은 뒤 다시 ②에서 요청을 만듭니다. 하네스가 결과를 전달하지 않거나 모델이 그 결과를 무시하면 <b class="r">도구는 연결되어 있어도 판단에 쓰이지 않습니다.</b></div>
+  <aside>호출 로그는 단순한 개발 기록이 아니라 답이 어떤 관찰을 거쳤는지 확인하는 증거라는 말로 마무리하세요.</aside>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-part="파트 1 · 실패의 세 순간">
+  <h2>한 번의 재고 조회가 남긴 실행 기록</h2>
+  <div class="tr"><span class="m">[1] 모델의 요청</span>
+    get_inventory(sku='A-17', warehouse_id='BUSAN-02')
+
+<span class="h">[2] 하네스의 실행 결과</span>
+    {"sku": "A-17", "warehouse_id": "BUSAN-02",
+     "available_quantity": 7, "checked_at": "2026-08-27T01:55:00+09:00"}
+
+<span class="m">[3] 결과를 읽은 최종 답</span>
+    승인된 창고(BUSAN-02)에서 상품 A-17의 현재 가용 재고는 7개입니다.</div>
+  <ul class="pts">
+    <li><b>첫째 실패</b>는 [1] <b>이전</b> — 모델이 도구 설명을 읽고 선택하는 자리</li>
+    <li><b>둘째 실패</b>는 [2]가 [3]으로 넘어갈 때 — <code>available_quantity</code>와 <code>warehouse_id</code>를 함께 읽지 않으면 다른 창고의 재고처럼 답합니다</li>
+    <li><b>셋째 실패</b>는 한 바퀴가 끝난 뒤 — 기록과 판정이 비어 있으면 순환은 <b class="r">학습 없는 반복</b>이 됩니다</li>
+  </ul>
+  <aside>이 기록은 도구가 답을 대신 쓴 장면이 아니라 요청과 실행 결과가 모델에 되돌아간 장면이라고 강조하세요.</aside>
+</section>
+
+<!-- 11 ❓Q3 -->
+<section class="slide" data-part="파트 1 · ❓ 질문 3">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">모델 · 에이전트 · 하네스 · 루프.<br>세 가지 실패는 각각 <span class="y">어느 층의 병</span>일까요?</div>
+    <div class="hint">잘못 고름 / 잘못 읽음 / 반복 — 셋을 각각 짝지어 보세요</div>
+  </div>
+  <aside>조금 어려운 질문입니다. 답이 안 나와도 괜찮다고 말해 주고 20초만 기다린 뒤 넘기세요.</aside>
+</section>
+
+<!-- 12 💡A3 -->
+<section class="slide" data-part="파트 1 · 💡 정답 3">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> 세 가지 실패는 각각 어느 층의 병일까요?</div>
+    <div class="tw"><table class="sm">
+      <thead><tr><th>낱말</th><th>무엇인가</th><th>어느 실패</th></tr></thead>
+      <tbody>
+        <tr><td><b>모델</b></td><td>다음에 올 텍스트를 고르는 엔진. 그 자체로는 답하는 것 외에 아무 일도 안 함</td><td><b class="r">잘못 읽음</b> — 결과 해석</td></tr>
+        <tr><td><b>에이전트</b></td><td>과업을 스스로 판단해 진행하는 역할. 모델이 두뇌를 맡는 하나의 구성</td><td><b class="r">잘못 고름</b> — 판단이자 계약</td></tr>
+        <tr><td><b>하네스</b></td><td>허용 목록 확인 · 인자 검사 · 실행 · 결과 재입력의 집행 장치</td><td rowspan="2" style="vertical-align:middle"><b class="r">같은 실수 반복</b><br>— 멈춤을 설계하지 않음</td></tr>
+        <tr><td><b>루프</b></td><td>호출과 실행의 순환. 관찰이 다음 선택을 바꿀 때 의미가 생김</td></tr>
+      </tbody>
+    </table></div>
+    <div class="hl">네 낱말은 <b>계층</b>입니다. 모델이 에이전트의 두뇌이고, 하네스가 그 두뇌를 도구와 이으며, 루프가 그 연결이 도는 형태입니다. <b class="g">낱말을 가려 쓰는 것은 어휘의 문제가 아니라 실패의 층을 가리는 일입니다.</b></div>
+  </div>
+  <aside>같은 모델이 단순 질의응답에 쓰이면 에이전트라 부르지 않고, 과업의 경계를 정해 실행에 나서는 구성 속에 놓이면 에이전트라 부른다는 구분도 덧붙이세요.</aside>
+</section>
+
+<!-- 13 파트1 정리 -->
+<section class="slide" data-part="파트 1 · 정리">
+  <h2>파트 1 정리</h2>
+  <div class="steps tight">
+    <div class="st"><div class="n">1</div><div class="t">도구를 잇는 일은 완성이 아니라 <b>새로운 판단 연쇄의 시작</b></div></div>
+    <div class="st"><div class="n">2</div><div class="t">실패는 세 순간 — <b>잘못 고름 · 잘못 읽음 · 반복</b></div></div>
+    <div class="st"><div class="n">3</div><div class="t">모델은 <b>요청만 쓰고</b>, 실행은 <b>하네스</b>가 한다</div></div>
+    <div class="st"><div class="n">4</div><div class="t">네 낱말은 계층이고, 세 실패는 <b>각기 다른 층의 병</b></div></div>
+  </div>
+  <div class="big" style="margin-top:16px">모델이 무엇을 읽었는지 펼쳐 보기 전에는<br><span class="y">어디를 고칠지 말할 수 없습니다</span></div>
+  <aside>마지막 문장이 파트 2로 넘기는 다리입니다. 두 번째 발표자에게 넘기세요.</aside>
+</section>
+
+<!-- ══════════ PART 2 ══════════ -->
+<!-- 14 -->
+<section class="slide" data-part="파트 2 · 설명은 지시다">
+  <div class="part">
+    <div class="pno">2</div>
+    <h2 style="margin-bottom:8px">도구 설명은 모델이 읽는 지시다</h2>
+    <p>계약의 세 자리 · 텍스트 규약에서 MCP까지 · 실측으로 확인하기</p>
+    <div class="who">발표자 ② · 약 15분</div>
+  </div>
+  <aside>파트 2입니다. 앞 파트가 "어디서 어긋나나"였다면 여기는 "모델이 실제로 무엇을 읽나"입니다.</aside>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-part="파트 2 · 설명은 지시다">
+  <h2>도구는 함수 이름을 등록하는 기능이 아닙니다</h2>
+  <div class="big">부산 창고 재고를 물었는데 모델이 주문 조회 도구를 골랐다면<br><span class="y">잘못은 어느 문장에서 시작됐을까요</span></div>
+  <p style="margin-top:16px">모델이 <b>실제로 읽은 도구 설명</b>을 펼쳐야 고칠 자리를 찾을 수 있습니다.</p>
+  <div class="hl">도구는 <b>설명(description) · 인자 스키마 · 반환 형식 · 실패 뒤 행동</b>을 묶은 <b class="g">계약</b>이며, 모델은 이 계약을 읽고 행동을 고릅니다.</div>
+  <aside>1강의 첫째 실패, 즉 도구를 잘못 고르는 순간이 어디서 생기는지를 이 파트가 답합니다.</aside>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-part="파트 2 · 설명은 지시다">
+  <h2>계약의 세 자리를 함께 씁니다</h2>
+  <div class="steps">
+    <div class="st"><div class="n">1</div><div class="t"><b>설명</b> — 목적과 사용할 조건을 문장으로. "허용된 창고의 현재 재고를 조회하며 <b>수량은 바꾸지 않는다</b>"는 선택의 경계를 줍니다. <b class="r">실패 조건을 빼면 모델은 빈자리를 추측으로 메웁니다</b></div></div>
+    <div class="st"><div class="n">2</div><div class="t"><b>인자 스키마</b> — 호출의 빈칸을 <b>기계적으로</b> 제한. 식별자의 의미, 필수 여부, 허용값. 설명은 목적과 맥락을 주고, 스키마는 <b>형식 오류가 실행 경계를 넘지 못하게</b> 합니다</div></div>
+    <div class="st"><div class="n">3</div><div class="t"><b>반환 형식과 실패 뒤 행동</b> — 성공엔 식별자·상태·기준 시각처럼 <b>필요한 값만</b>. 실패엔 재입력·권한 요청·재조회 중 <b>다음 행동</b>을 드러냅니다</div></div>
+  </div>
+  <div class="hl">정상값뿐 아니라 <b>인자 누락 · 범위 밖 값 · 일시적 서버 실패</b>로 계약을 확인합니다.</div>
+  <aside>세 자리를 따로 말하지 말고 "함께 써야 한다"를 강조하세요. 하나만 있으면 나머지가 빈자리가 됩니다.</aside>
+</section>
+
+<!-- 17 ❓Q4 -->
+<section class="slide" data-part="파트 2 · ❓ 질문 4">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">우리가 쓴 <span class="y">도구 설명 문장</span>은<br>모델 입력의 <span class="y">어디에</span> 들어갈까요?</div>
+    <div class="hint">system / user / assistant · 아니면 다른 곳?</div>
+  </div>
+  <aside>여기서 물어보세요. 대부분 "그냥 어딘가 들어가겠지"라고 막연히 생각합니다. 다음 장이 실측 원문이라 임팩트가 큽니다.</aside>
+</section>
+
+<!-- 18 💡A4 -->
+<section class="slide" data-part="파트 2 · 💡 정답 4">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> 도구 설명 문장은 모델 입력의 어디에 들어갈까요?</div>
+    <div class="ra"><span class="y">시스템 지시 블록 안</span>의 &lt;tools&gt; 에 들어갑니다.<br>호출 형식 안내까지 <span class="y">함께 주입</span>됩니다</div>
+    <div class="tr more" style="line-height:1.6">&lt;|im_start|&gt;<span class="k">system</span>
+# Tools
+&lt;tools&gt;
+{"type":"function","function":{"name":"open_colab_browser_connection",
+ "description":"Opens a connection to a Google Colab browser ...",
+ "parameters":{"properties":{},"type":"object"}}}
+&lt;/tools&gt;
+If you choose to call a function ONLY reply in the following format ...
+&lt;|im_end|&gt;
+&lt;|im_start|&gt;<span class="k">user</span>  구글 코랩을 브라우저로 연결해 줘&lt;|im_end|&gt;</div>
+    <div class="hl" style="margin-top:10px;padding:11px 16px">GGUF에서 공식 채팅 템플릿을 꺼내 직접 렌더링한 <b>실측 원문</b>. <code>description</code>이 그대로 JSON 안에 들어갑니다.</div>
+  </div>
+  <aside>특수 토큰은 서버가 문자가 아니라 토큰으로 취급한다는 점을 짚어 주세요.</aside>
+</section>
+
+<!-- 19 -->
+<section class="slide" data-part="파트 2 · 설명은 지시다">
+  <h2>숫자로도 확인됩니다</h2>
+  <div class="calc">
+    <div class="row"><span class="lab">서버 처리</span><span>bind_tools로 도구를 연결해 요청</span><span class="val">prompt_eval_count 289</span></div>
+    <div class="row"><span class="lab">직접 렌더</span><span>템플릿을 꺼내 raw로 같은 텍스트 전송</span><span class="val">288</span></div>
+    <div class="row hot"><span class="lab">차이</span><span>시작 토큰·빈 생각 블록 처리 차이</span><span class="val">1 토큰</span></div>
+  </div>
+  <div class="big" style="margin-top:16px">도구 설명 문장이 <span class="y">시스템 지시와 같은 프롬프트 안</span>에 놓이는 이상<br><span class="y">계약을 쓰는 일은 곧 프롬프트를 쓰는 일</span>입니다</div>
+  <aside>이 한 문장이 파트 2의 결론입니다. 두 입력이 사실상 같은 텍스트임을 1토큰 차이로 확인한 것입니다.</aside>
+</section>
+
+<!-- 20 ❓Q5 -->
+<section class="slide" data-part="파트 2 · ❓ 질문 5">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">애플리케이션이 <span class="y">M개</span>, 도구·서비스가 <span class="y">N개</span>입니다.<br>각 조합을 따로 연결하면 몇 개의 작업이 생길까요?<br>그리고 <span class="y">MCP는 왜 나왔을까요?</span></div>
+    <div class="hint">곱셈 하나면 답이 보입니다</div>
+  </div>
+  <aside>이건 답이 쉬워서 청중이 말하기 좋습니다. M 곱하기 N이라는 답을 받아내고 넘기세요.</aside>
+</section>
+
+<!-- 21 💡A5 -->
+<section class="slide" data-part="파트 2 · 💡 정답 5">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> M개 앱 × N개 도구를 따로 연결하면? MCP는 왜 나왔나?</div>
+    <div class="ra"><span class="y">M × N</span>개의 연결 작업.<br>게다가 API마다 도구 선언·인증·반환값 해석 규칙까지 달랐습니다</div>
+    <div class="cyc more">
+      <div class="s"><div class="n">①</div><span><b>텍스트 규약</b> — 시스템 프롬프트에 도구를 적고 <code>Action: 검색</code> 같은 문장을 개발자가 직접 파싱 (ReAct 계열)</span><span class="who">표기법이 제각각</span></div>
+      <div class="s"><div class="n">②</div><span><b>네이티브 툴 호출</b> — 2023.6 OpenAI function calling, Anthropic tool use. API가 <b>호출 구조를 보장</b></span><span class="who">개별 호출은 정리</span></div>
+      <div class="s harness"><div class="n">③</div><span><b>MCP</b> — 2024.11.25 공개 표준. 서버가 도구·리소스·프롬프트를 <b>표준 형식</b>으로 내놓고 클라이언트가 공통 규약으로 소비</span><span class="who">연결을 표준화</span></div>
+    </div>
+    <div class="hl">개별 호출의 구조는 갖췄지만 <b>여러 제품이 연결을 함께 쓰는 문제</b>가 남았고, 그 자리에 MCP가 왔습니다.</div>
+  </div>
+  <aside>MCP는 외부 기능을 표준 방식으로 전달하지만 인증·권한·서버 운영을 대신 해결하지는 않는다는 단서를 꼭 붙이세요.</aside>
+</section>
+
+<!-- 22 -->
+<section class="slide" data-part="파트 2 · 설명은 지시다">
+  <h2>능력을 건네는 세 경로</h2>
+  <div class="tw"><table class="sm">
+    <thead><tr><th>경로</th><th>주로 맡는 것</th><th>강점</th><th class="wall">주의</th></tr></thead>
+    <tbody>
+      <tr><td><b>시스템 프롬프트</b></td><td><b>규칙</b></td><td>모든 요청에 적용되는 짧고 안정적인 기준</td><td>드문 절차까지 넣으면 <b>매번 문맥 비용</b></td></tr>
+      <tr><td><b>Skill</b></td><td><b>절차</b></td><td>과업별 절차·참고자료·완료 기준을 필요할 때 불러옴</td><td><b>언제 불러오고 누가 갱신할지</b> 관리 필요</td></tr>
+      <tr><td><b>MCP</b></td><td><b>연결</b></td><td>서버의 도구와 스키마를 표준으로 연결</td><td>인증·권한·서버 운영은 <b>대신 해결 안 함</b></td></tr>
+    </tbody>
+  </table></div>
+  <div class="big" style="margin-top:16px">그러나 모델의 관점에서는 세 방식 모두<br><span class="y">결국 모델이 읽는 문장으로 환원됩니다</span></div>
+  <aside>이 마지막 문장이 파트 2 전체를 한 줄로 묶습니다.</aside>
+</section>
+
+<!-- 23 파트2 정리 -->
+<section class="slide" data-part="파트 2 · 정리">
+  <h2>파트 2 정리</h2>
+  <div class="steps tight">
+    <div class="st"><div class="n">1</div><div class="t">도구는 이름 등록이 아니라 <b>설명 · 스키마 · 반환 · 실패 뒤 행동</b>의 계약</div></div>
+    <div class="st"><div class="n">2</div><div class="t">그 설명은 <b>시스템 지시 블록 안</b>에 주입된다 (실측 289 대 288토큰)</div></div>
+    <div class="st"><div class="n">3</div><div class="t">텍스트 규약 → 네이티브 툴 호출 → MCP. <b>M×N 문제</b>가 표준을 불렀다</div></div>
+    <div class="st"><div class="n">4</div><div class="t">규칙은 시스템 프롬프트, 절차는 Skill, 연결은 MCP. 그러나 <b>모두 문장으로 환원</b></div></div>
+  </div>
+  <div class="big" style="margin-top:16px">계약을 쓰는 일이 곧 <span class="y">프롬프트를 쓰는 일</span>이라면<br>그 계약을 <span class="y">어떻게 써야</span> 할까요?</div>
+  <aside>세 번째 발표자에게 넘기는 다리입니다.</aside>
+</section>
+
+<!-- ══════════ PART 3 ══════════ -->
+<!-- 24 -->
+<section class="slide" data-part="파트 3 · 정의서와 하네스">
+  <div class="part">
+    <div class="pno">3</div>
+    <h2 style="margin-bottom:8px">도구 정의서와 최소 하네스</h2>
+    <p>여섯 항목으로 계약 쓰기 · 우리가 직접 겪은 실패 · 하네스의 여섯 지점</p>
+    <div class="who">발표자 ③ · 약 15분</div>
+  </div>
+  <aside>마지막 파트입니다. 여기에는 노드 본문에 없는 우리 팀의 실측이 들어갑니다. 그 점을 미리 말해 주면 집중도가 올라갑니다.</aside>
+</section>
+
+<!-- 25 -->
+<section class="slide" data-part="파트 3 · 정의서와 하네스">
+  <h2>도구 정의서 — 여섯 항목</h2>
+  <div class="tw"><table class="sm">
+    <thead><tr><th>항목</th><th>기록할 내용</th></tr></thead>
+    <tbody>
+      <tr><td><b>① 이름</b></td><td>동사 + 대상 — <code>get_inventory</code></td></tr>
+      <tr><td><b>② 하는 일 한 문장</b></td><td>승인된 창고의 특정 SKU 가용 수량을 <b>읽기 전용</b>으로 조회합니다</td></tr>
+      <tr><td><b>③ 언제 쓰고 안 쓰는지</b></td><td>수량 질문에는 쓰고, <b>수량 변경·창고 미지정</b>에는 쓰지 않습니다</td></tr>
+      <tr><td><b>④ 인자 스키마</b></td><td><code>sku</code> 문자열 3~32자 · <code>warehouse_id</code> enum <code>SEOUL-01</code> <code>BUSAN-02</code></td></tr>
+      <tr><td><b>⑤ 반환 형식</b></td><td>SKU, 창고, 가용 수량, 확인 시각 — <b>원본 덤프 금지</b></td></tr>
+      <tr><td><b>⑥ 실패 정의와 뒤 행동</b></td><td>오류별로 한 번 재시도, 허용 창고 질문, 또는 중단</td></tr>
+    </tbody>
+  </table></div>
+  <div class="hl"><b>도구 하나는 동작 하나여야 합니다.</b> 재고 조회와 수량 변경을 한 엔드포인트에 넣지 않습니다. 반환값도 원본 덤프가 아니라 답의 근거가 될 필드로 제한합니다 — <b class="r">과한 반환은 컨텍스트를 잠식해 필요한 근거를 흐립니다.</b></div>
+  <aside>여섯 항목을 한 표에 모으는 이유는 계약의 어느 칸이 비어 실패가 생겼는지 바로 가리킬 수 있기 때문이라고 말해 주세요.</aside>
+</section>
+
+<!-- 26 -->
+<section class="slide" data-part="파트 3 · 정의서와 하네스">
+  <h2>실행 전에 채점 기준을 저장합니다</h2>
+  <div class="tw"><table class="sm">
+    <thead><tr><th>채점 기준</th><th>통과의 이진 정의</th><th>확인 위치</th></tr></thead>
+    <tbody>
+      <tr><td><b>스키마 준수</b></td><td>허용된 <code>warehouse_id</code>만 사용했다</td><td>도구 호출 인자</td></tr>
+      <tr><td><b>호출 성공</b></td><td>성공 반환 또는 <b>명시된 오류 코드</b>가 남았다</td><td>도구 응답</td></tr>
+      <tr><td><b>결과 사용 가능성</b></td><td>최종 답이 <code>available_quantity</code>와 <code>checked_at</code>만 근거로 삼았다</td><td>최종 답변</td></tr>
+      <tr><td><b>실패 처리</b></td><td>오류 뒤 수량을 <b>추정하지 않고</b> 정해진 행동을 택했다</td><td>호출·최종 답변</td></tr>
+    </tbody>
+  </table></div>
+  <div class="big" style="margin-top:14px">결과를 본 뒤 기준을 만들면<br><span class="y">마음에 드는 호출을 성공으로 정당화</span>하게 됩니다</div>
+  <aside>노드 2에서 배운 원칙이 여기서 다시 나옵니다. 결과 전에 기준을 고정한다는 것입니다.</aside>
+</section>
+
+<!-- 27 ❓Q6 -->
+<section class="slide" data-part="파트 3 · ❓ 질문 6">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">허용 창고는 <span class="y">SEOUL-01, BUSAN-02</span> 둘뿐입니다.<br>사용자가 <span class="y">"부산 3번 창고"</span>의 재고를 물으면<br>모델은 어떻게 할까요?</div>
+    <div class="hint">오류가 날까요, 되물을까요, 아니면 다른 무엇을?</div>
+  </div>
+  <aside>여기서 반드시 물어보세요. 대부분 "오류가 난다" 또는 "되묻는다"라고 답합니다. 다음 장이 우리 팀의 실측이고, 답이 셋 다 아닙니다.</aside>
+</section>
+
+<!-- 28 💡A6 -->
+<section class="slide" data-part="파트 3 · 💡 정답 6">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> 허용 밖인 "부산 3번 창고"를 물으면 모델은 어떻게 할까요?</div>
+    <div class="ra">오류도 되물음도 아니었습니다.<br><span class="y">BUSAN-02로 조용히 치환</span>해서 호출했습니다</div>
+    <div class="tr more">[0] 사용자 요청: 부산 3번 창고의 A-17 재고를 알려 줘
+<span class="m">[1] 모델의 요청</span>: get_inventory(sku='A-17', warehouse_id=<span class="h">'BUSAN-02'</span>)
+<span class="h">[2] 하네스</span>: available_quantity 7   <span class="h">← 오류 아님</span>
+<span class="m">[3] 최종 답</span>: "BUSAN-02 창고에서 7개입니다"</div>
+    <div class="hl">우리 팀 실측 <code>trace-02</code> · qwen3.5:2b · temperature 0. <b class="r">스키마는 지켰지만 사용자가 묻지 않은 창고의 수량을 답했습니다.</b> 오류가 안 났으니 실패 뒤 행동이 실행될 기회조차 없었습니다.</div>
+  </div>
+  <aside>이게 1강 첫째 실패의 변형입니다. 도구는 맞게 골랐지만 인자를 추측으로 메웠습니다. 그리고 오류가 안 나는 실패라는 점이 특히 무섭다고 말해 주세요.</aside>
+</section>
+
+<!-- 29 -->
+<section class="slide" data-part="파트 3 · 정의서와 하네스">
+  <h2>그래서 계약에 한 줄을 더했습니다</h2>
+  <div class="hl" style="margin-top:0"><b>추가한 문장</b> — "사용자가 말한 창고 이름이 SEOUL-01 또는 BUSAN-02와 정확히 일치하지 않으면 비슷한 코드로 추측해 호출하지 말고, 허용된 창고 코드를 되물어야 합니다."</div>
+  <div class="tr">[0] 같은 요청: 부산 3번 창고의 A-17 재고를 알려 줘
+<span class="m">[1] 모델의 요청</span>: get_inventory_v3(warehouse_id=<span class="h">'BUSAN-02'</span>)
+<span class="m">[3] 최종 답</span>: "BUSAN-02 창고에서 7개입니다"</div>
+  <div class="big"><span class="y">결과가 같았습니다</span><br>금지 문장을 계약에 넣었는데도 여전히 치환했습니다</div>
+  <div class="hl"><code>trace-04</code> — 단일 변경 원칙대로 <b>설명 한 줄만</b> 바꾸고 나머지는 고정했습니다.</div>
+  <aside>여기서 잠깐 침묵하세요. 설명 문장의 한계를 체감시키는 자리입니다.</aside>
+</section>
+
+<!-- 30 ❓Q7 -->
+<section class="slide" data-part="파트 3 · ❓ 질문 7">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">그런데 <span class="y">"가을 워크숍에 자리 남았어요?"</span>라고 물었을 때는<br>모델이 <span class="y">호출하지 않고 되물었습니다.</span><br>무엇이 달랐을까요?</div>
+    <div class="hint">계약 문장이 더 좋아서였을까요?</div>
+  </div>
+  <aside>이 질문이 오늘 덱에서 가장 중요합니다. 답이 직관과 다릅니다. 충분히 기다려 주세요.</aside>
+</section>
+
+<!-- 31 💡A7 -->
+<section class="slide" data-part="파트 3 · 💡 정답 7">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> 왜 "가을 워크숍"에서는 되물었을까요? 계약이 더 좋아서?</div>
+    <div class="ra">아닙니다.<br><span class="y">빈칸을 메울 그럴듯한 후보가 하나뿐이었는가</span>의 차이였습니다</div>
+    <div class="tw more"><table class="sm">
+      <thead><tr><th></th><th>trace-04</th><th>trace-06</th></tr></thead>
+      <tbody>
+        <tr><td>사용자 표현</td><td>"부산 3번 창고"</td><td>"가을 워크숍"</td></tr>
+        <tr><td>허용 코드</td><td>SEOUL-01, BUSAN-02</td><td>AUTUMN-W1 ~ W4</td></tr>
+        <tr><td>그럴듯한 후보</td><td><b class="r">사실상 하나</b></td><td><b class="g">넷</b></td></tr>
+        <tr><td>모델의 행동</td><td>치환해 호출</td><td>호출 안 하고 되물음</td></tr>
+      </tbody>
+    </table></div>
+    <div class="hl"><b class="r">되물음이 나온 것은 계약이 잘 써져서가 아니라 하나를 고를 수 없었기 때문입니다.</b> 우연에 기댄 방어입니다.</div>
+  </div>
+  <aside>이 결론이 다음 장의 6강 인용으로 이어집니다. 그래서 하네스가 필요하다는 흐름입니다.</aside>
+</section>
+
+<!-- 32 -->
+<section class="slide" data-part="파트 3 · 정의서와 하네스">
+  <h2>그래서 하네스가 필요합니다</h2>
+  <div class="big">도구 이름과 인자 형식은 모델에게 <span class="y">사용법을 알려 줄 뿐</span><br><span class="y">권한을 부여하지 않습니다</span></div>
+  <p style="margin-top:16px">스키마가 "수량은 1 이상"이라고 적어도 그것은 <b>안내일 뿐</b>입니다. 실제 제한은 <b class="g">서버 쪽 실행 계층</b>이 호출자 신원, 허용 범위, 현재 상태, 변경 한도를 검사할 때 생깁니다.</p>
+  <div class="hl">모델이 잘못된 창고를 고르거나 허용되지 않은 수량을 제안하면 서버는 <b>실행하지 않고 이유를 남겨야</b> 합니다. 이 하네스 제한은 <b class="g">모델의 선의나 정확도에 기대지 않는 방어</b>입니다.</div>
+  <aside>6강의 문장입니다. 우리 실측이 이 문장을 그대로 증명했다고 연결해 주세요.</aside>
+</section>
+
+<!-- 33 -->
+<section class="slide" data-part="파트 3 · 정의서와 하네스">
+  <h2>최소 하네스 — 여섯 개의 설계 지점</h2>
+  <div class="cyc">
+    <div class="s"><div class="n">①</div><span><b>시스템 지시</b> — 역할·우선순위·금지 행동</span><span class="who">빠지면 추측으로 답함</span></div>
+    <div class="s"><div class="n">②</div><span><b>도구</b> — 이름이 아니라 입력·반환·실패·경계의 계약</span><span class="who">모호하면 변경 도구를 부름</span></div>
+    <div class="s harness"><div class="n">③</div><span><b>권한</b> — 계약상 가능한 것 중 실제 허용하는 범위</span><span class="who">잘못 고른 도구가 곧 변경</span></div>
+    <div class="s"><div class="n">④</div><span><b>실행 환경</b> — 작업 폴더·네트워크·자격 증명·시간과 비용 한계</span><span class="who">폴더가 다르면 엉뚱한 파일</span></div>
+    <div class="s"><div class="n">⑤</div><span><b>관찰</b> — 도구·입력·판정·반환·후속 판단의 기록</span><span class="who">없으면 잘못 읽은 순간을 못 찾음</span></div>
+    <div class="s harness"><div class="n">⑥</div><span><b>중단</b> — 멈춤 조건과 사람 이관</span><span class="who">셋째 실패를 막는 브레이크</span></div>
+  </div>
+  <div class="hl">중단은 <b class="r">능력이 부족하다는 선언이 아니라</b>, 불확실한 실행이 권한과 비용을 더 소비하기 전에 <b class="g">책임 있는 판단으로 바꾸는 장치</b>입니다.</div>
+  <aside>계기판 없는 차체가 속도와 연료를 알 수 없듯 관찰 없는 실행은 결과만 남기고 근거를 잃는다는 비유를 ⑤에서 쓰세요.</aside>
+</section>
+
+<!-- 34 -->
+<section class="slide" data-part="파트 3 · 정의서와 하네스">
+  <h2>여섯 지점은 따로 놓이지 않습니다</h2>
+  <div class="flow">
+    <div class="f">시스템 지시가 조회를 요구해도 <b>도구 계약이 빈약하면</b> 잘못 고릅니다</div>
+    <div class="d">↓</div>
+    <div class="f">올바른 도구라도 <b>권한과 환경이 맞지 않으면</b> 실행되지 않습니다</div>
+    <div class="d">↓</div>
+    <div class="f">실행됐더라도 <b>기록이 없으면</b> 잘못 읽은 이유를 알 수 없습니다</div>
+    <div class="d">↓</div>
+    <div class="f key"><b>중단 조건이 없으면 실패가 반복됩니다</b></div>
+  </div>
+  <div class="big" style="margin-top:12px;padding:18px 22px">하네스는 도구 목록이 아니라 <span class="y">선택·실행·확인·멈춤을 연결하는 구조</span>입니다</div>
+  <div class="hl" style="margin-top:11px;padding:11px 16px"><b class="g">같은 모델, 다른 하네스는 다른 에이전트</b>. mini-swe-agent가 약 100줄로 높은 점수를 받은 사례가 공유한 것은 <b>모델과 하네스 조합의 성능</b>입니다.</div>
+  <aside>점수를 비교하려면 모델·날짜·환경·반복 설정이 같아야 하고, 이 조건 없이 서로 다른 시기의 점수를 한 줄로 잇는 것은 읽기 함정이라는 경고도 덧붙이세요.</aside>
+</section>
+
+<!-- 35 파트3 정리 -->
+<section class="slide" data-part="파트 3 · 정리">
+  <h2>파트 3 정리</h2>
+  <div class="steps tight">
+    <div class="st"><div class="n">1</div><div class="t">도구 정의서 <b>여섯 항목</b>. 도구 하나는 <b>동작 하나</b></div></div>
+    <div class="st"><div class="n">2</div><div class="t">채점 기준은 <b>실행 전</b>에 저장한다</div></div>
+    <div class="st"><div class="n">3</div><div class="t">계약 문장의 금지만으로는 <b>인자 추측을 못 막았다</b> (trace-02·04)</div></div>
+    <div class="st"><div class="n">4</div><div class="t">되물음은 계약이 좋아서가 아니라 <b>후보가 여럿이라서</b>였다 (trace-06)</div></div>
+    <div class="st"><div class="n">5</div><div class="t">그래서 인자 검증은 설명이 아니라 <b>하네스에서 강제</b>한다</div></div>
+    <div class="st"><div class="n">6</div><div class="t">최소 하네스 여섯 지점 — 지시·도구·권한·환경·관찰·중단</div></div>
+  </div>
+  <aside>지도로 돌아가기 전 마지막 정리입니다.</aside>
+</section>
+
+<!-- ══════════ 마무리 ══════════ -->
+<!-- 36 -->
+<section class="slide" data-part="마무리">
+  <h2>🗺️ 지도로 돌아왔습니다</h2>
+  <div class="tw"><table class="sm">
+    <thead><tr><th>파트</th><th>내용</th><th>핵심 한 줄 — 이제 설명할 수 있습니다</th></tr></thead>
+    <tbody>
+      <tr><td><b>1</b></td><td>실패의 세 순간</td><td>모델은 <b>요청만</b> 쓰고, 실행은 하네스가 한다</td></tr>
+      <tr><td><b>2</b></td><td>설명은 지시다</td><td>도구 설명은 <b>시스템 블록 안</b>에 주입된다 (289 대 288토큰)</td></tr>
+      <tr><td><b>3</b></td><td>정의서와 하네스</td><td>계약 문장으로 못 막는 것이 있고, 그건 <b>하네스가 막는다</b></td></tr>
+    </tbody>
+  </table></div>
+  <div class="hl">🎯 처음 질문 — <b>"에이전트에게 무엇을 줄 것인가?"</b> 답은 도구 목록이 아니라 <b>계약 · 권한 · 관찰 · 중단</b>입니다.</div>
+  <aside>세 담당자가 각자 핵심 한 줄을 말하며 마무리해도 좋습니다.</aside>
+</section>
+
+<!-- 37 핵심 문장 -->
+<section class="slide" data-part="마무리">
+  <h2>핵심 다섯 문장</h2>
+  <div class="steps tight">
+    <div class="st"><div class="n">1</div><div class="t">도구를 잇는 일은 완성이 아니라 <b>새로운 판단 연쇄의 시작</b>이다</div></div>
+    <div class="st"><div class="n">2</div><div class="t">모델은 <b>요청만 쓴다.</b> 실행하는 것은 하네스다</div></div>
+    <div class="st"><div class="n">3</div><div class="t">도구 설명은 <b>모델이 읽는 지시</b>다. 계약을 쓰는 일이 곧 프롬프트를 쓰는 일이다</div></div>
+    <div class="st"><div class="n">4</div><div class="t">도구 이름과 인자 형식은 <b>사용법을 알려 줄 뿐 권한을 부여하지 않는다</b></div></div>
+    <div class="st"><div class="n">5</div><div class="t"><b>같은 모델, 다른 하네스는 다른 에이전트</b>다</div></div>
+  </div>
+  <aside>사진 찍으라고 하세요. 이 다섯 줄이 오늘의 전부입니다.</aside>
+</section>
+
+<!-- 38 ❓최종 질문 -->
+<section class="slide" data-part="마무리 · ❓ 최종 질문">
+  <div class="ask">
+    <div class="mark">❓</div>
+    <div class="q">마지막 질문입니다.<br>도구 설명에 <span class="y">"추측하지 말고 되물어라"</span>라고 썼는데도<br>모델이 추측했습니다. <span class="y">무엇을 고쳐야 할까요?</span></div>
+    <div class="hint">설명을 더 강하게? 스키마를 더 촘촘히? 아니면…</div>
+  </div>
+  <aside>오늘 전체를 회수하는 질문입니다. 여러 답이 나오게 두고 마지막에 공개하세요.</aside>
+</section>
+
+<!-- 39 💡최종 답 -->
+<section class="slide" data-part="마무리 · 💡 최종 답">
+  <div class="rev">
+    <div class="rq"><b>Q.</b> "추측하지 말고 되물어라"라고 썼는데도 추측했습니다. 무엇을 고쳐야 할까요?</div>
+    <div class="ra">설명을 더 강하게 쓰는 것이 아니라<br><span class="y">하네스에서 인자를 검증하고 실행을 막는 것</span>입니다</div>
+    <div class="steps tight more">
+      <div class="st"><div class="n">✕</div><div class="t"><b>설명을 더 세게</b> — trace-04에서 실패를 확인했습니다</div></div>
+      <div class="st"><div class="n">△</div><div class="t"><b>스키마 enum</b> — 형식 오류는 막지만, 허용값으로 <b>치환된 호출</b>은 통과시킵니다</div></div>
+      <div class="st"><div class="n">✓</div><div class="t"><b>하네스 검증</b> — 사용자 발화와 인자가 어긋나면 <b>실행하지 않고 이유를 남깁니다</b></div></div>
+    </div>
+    <div class="hl">모델의 선의나 정확도에 기대지 않는 층을 두는 것. 그것이 오늘 배운 <b class="g">최소 하네스의 존재 이유</b>입니다.</div>
+  </div>
+  <aside>여기서 오늘 발표가 닫힙니다. 다음 장은 감사 인사입니다.</aside>
+</section>
+
+<!-- 40 감사 -->
+<section class="slide" data-part="마무리">
+  <div class="cover">
+    <span class="kick">프롬프트 엔지니어링 · 노드 4 · 1~4강</span>
+    <h1 style="margin:20px 0">같은 모델,<br>다른 하네스</h1>
+    <div class="big" style="margin-top:20px;max-width:740px;margin-left:auto;margin-right:auto">
+      도구 설계의 질문은<br>"모델이 도구를 가졌는가"가 아니라<br><span class="y">"세 실패 순간을 어느 경계에서 막는가"</span>입니다
+    </div>
+    <p class="sub" style="margin-top:24px">감사합니다 · 발표자 ① ② ③<br><span style="font-size:.85rem">← → 이동 · S 대본 · F 전체화면 · 🌗 테마</span></p>
+  </div>
+  <aside>마무리입니다. 감사합니다.</aside>
+</section>
+
+</div>
+
+<div class="notes" id="notes"><span class="lab">발표 대본</span><div id="noteTxt"></div></div>
+
+<script>
+  var S=[].slice.call(document.querySelectorAll('.slide')), i=0;
+  function draw(){
+    S.forEach(function(s,n){s.classList.toggle('on',n===i)});
+    document.getElementById('bar').style.width=((i+1)/S.length*100)+'%';
+    document.getElementById('pg').textContent=(i+1)+' / '+S.length;
+    document.getElementById('topL').textContent=S[i].dataset.part||'';
+    var a=S[i].querySelector('aside');
+    document.getElementById('noteTxt').textContent=a?a.textContent:'(대본 없음)';
+    try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  }
+  function go(d){i=Math.min(S.length-1,Math.max(0,i+d));draw()}
+  function tgN(){document.getElementById('notes').classList.toggle('on')}
+  function tgT(){var r=document.documentElement,d=r.getAttribute('data-theme');
+    var dark=d==='dark'||(!d&&matchMedia('(prefers-color-scheme:dark)').matches);
+    r.setAttribute('data-theme',dark?'light':'dark')}
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(-1)}
+    else if(e.key==='Home'){i=0;draw()} else if(e.key==='End'){i=S.length-1;draw()}
+    else if(e.key==='s'||e.key==='S'){tgN()}
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  });
+  document.getElementById('deck').addEventListener('click',function(e){
+    if(e.target.closest('.btn'))return;
+    go(e.clientX < innerWidth*0.32 ? -1 : 1);
+  });
+  var h=parseInt((location.hash||'').replace('#',''),10);
+  if(h>0&&h<=S.length)i=h-1;
+  draw();
+</script>
+</body>
+</html>
